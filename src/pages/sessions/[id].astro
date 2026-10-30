@@ -20,8 +20,15 @@ const gruppo = d.gruppo ? await getEntry(d.gruppo) : null;
 const luogo = d.luogo ? await getEntry(d.luogo) : null;
 const data = dataFormattata(d.dataPubblicazione);
 const durata = durataFormattata(d.durata);
+// Riassunto per i motori di ricerca: inizio della descrizione YouTube, al massimo ~160 caratteri.
+const riassunto = d.descrizione
+  ? (() => {
+      const t = d.descrizione.replace(/\s+/g, ' ').trim();
+      return t.length <= 160 ? t : t.slice(0, 157).replace(/\s+\S*$/, '') + '…';
+    })()
+  : null;
 ---
-<Base titolo={`${numeroFormattato(d.numero)} · ${titoloBreve(d.titolo)}`} descrizione={d.descrizione} immagine={`/miniature/${d.youtubeId}.jpg`}>
+<Base titolo={`${numeroFormattato(d.numero)} · ${titoloBreve(d.titolo)}`} descrizione={riassunto} immagine={`/miniature/${d.youtubeId}.jpg`}>
   <article class="sezione contenitore">
     <p class="numero">{numeroFormattato(d.numero)}</p>
     <h1>{titoloBreve(d.titolo)}</h1>
