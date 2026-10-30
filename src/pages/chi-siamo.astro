@@ -2,6 +2,14 @@
 import Base from '../layouts/Base.astro';
 import Segnaposto from '../components/Segnaposto.astro';
 import { SITO } from '../config';
+
+// Squadra: nomi e ruoli forniti da Bruno. Bio e foto da ricevere.
+// Per aggiungere una foto: metti il file in public/squadra/ e scrivi il percorso in `foto`.
+const squadra: { nome: string; ruolo: string; foto: string | null; bio: string | null }[] = [
+  { nome: 'Marcello Squillante', ruolo: 'Direzione artistica', foto: null, bio: null },
+  { nome: 'Luca Lanzano', ruolo: 'Filmmaker', foto: null, bio: null },
+  { nome: 'Bruno Belardi', ruolo: 'Fonico', foto: null, bio: null },
+];
 ---
 <Base titolo="Chi siamo">
   <section class="sezione contenitore">
@@ -9,12 +17,25 @@ import { SITO } from '../config';
     <div class="testo">
       <p>Napoli Folks registra gruppi folk in esterna.</p>
       <Segnaposto blocco>descrizione del progetto</Segnaposto>
+    </div>
 
-      <h2>Bruno Belardi</h2>
-      <p class="dettaglio">Fonico</p>
-      <Segnaposto blocco>testo su Bruno Belardi</Segnaposto>
+    <ul class="squadra">
+      {squadra.map((p) => (
+        <li class="persona">
+          {p.foto
+            ? <img class="foto" src={p.foto} alt={p.nome} width="800" height="1000" loading="lazy" />
+            : <div class="foto vuota"><Segnaposto>foto di {p.nome}</Segnaposto></div>}
+          <h2>{p.nome}</h2>
+          <p class="ruolo dettaglio">{p.ruolo}</p>
+          {p.bio
+            ? <p class="bio">{p.bio}</p>
+            : <Segnaposto blocco>bio di {p.nome}</Segnaposto>}
+        </li>
+      ))}
+    </ul>
 
-      <h2>Dove trovarci</h2>
+    <div class="testo">
+      <h2 class="titolo-contatti">Dove trovarci</h2>
       <p>Tutti i video e i materiali stanno su Instagram e YouTube.</p>
       <ul class="contatti">
         <li>
@@ -30,7 +51,21 @@ import { SITO } from '../config';
 </Base>
 
 <style>
-  h2 { margin-top: 1.6em; }
+  .squadra {
+    list-style: none; margin: clamp(40px, 7vw, 80px) 0; padding: 0;
+    display: grid; gap: clamp(40px, 5vw, 56px) clamp(24px, 3vw, 40px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .persona { display: grid; align-content: start; gap: 0; }
+  .foto { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; margin-bottom: 20px; }
+  .foto.vuota {
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px;
+    background: var(--fondo-2); border: 1px solid var(--linea);
+  }
+  .persona h2 { font-size: clamp(1.6rem, 3vw, 2rem); margin: 0 0 6px; }
+  .ruolo { margin: 0 0 14px; color: var(--accento); }
+  .bio { margin: 0; color: var(--testo-2); max-width: 32em; }
+  .titolo-contatti { margin-top: 0; }
   .contatti { padding-left: 1.1em; }
   .contatti li { margin-bottom: 0.4em; }
 </style>

@@ -18,7 +18,8 @@ si inseriscono solo dopo la conferma di Bruno.
 ## Cosa sappiamo (solo questo)
 
 - Napoli Folks registra gruppi folk in esterna.
-- Bruno Belardi è il fonico.
+- Squadra (pagina "Chi siamo"): Marcello Squillante, direzione artistica; Luca Lanzano,
+  filmmaker; Bruno Belardi, fonico. Bio e foto: da ricevere.
 - Instagram: pagina "napoli folks live" (URL esatto: da confermare).
 - YouTube: https://www.youtube.com/@NapoliFolksLive (ID canale `UCgBHZocloDLg_bqVOI0iddA`).
 - Email: napolifolks@gmail.com
