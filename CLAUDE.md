@@ -18,6 +18,8 @@ si inseriscono solo dopo la conferma di Bruno.
 ## Cosa sappiamo (solo questo)
 
 - Napoli Folks registra gruppi folk in esterna.
+- I video sono registrati tutti a Napoli: è il punto comune del progetto. Si registrano gli
+  artisti che si trovano a passare per Napoli; raramente fuori città (è successo a Sessa Aurunca).
 - Squadra (pagina "Chi siamo"): Marcello Squillante, direzione artistica; Luca Lanzano,
   filmmaker; Bruno Belardi, fonico. Bio e foto: da ricevere.
 - Instagram: https://www.instagram.com/napoli_folks_live/
