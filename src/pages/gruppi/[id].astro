@@ -1,0 +1,39 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Segnaposto from '../../components/Segnaposto.astro';
+import GrigliaSessioni from '../../components/GrigliaSessioni.astro';
+import { tutteLeSessioni } from '../../lib/sessioni';
+
+export async function getStaticPaths() {
+  const gruppi = await getCollection('gruppi');
+  return gruppi.map((g) => ({ params: { id: g.id }, props: { gruppo: g } }));
+}
+
+interface Props { gruppo: CollectionEntry<'gruppi'> }
+const { gruppo } = Astro.props;
+const sessioni = (await tutteLeSessioni()).filter((s) => s.data.gruppo?.id === gruppo.id);
+---
+<Base titolo={gruppo.data.nome} descrizione={gruppo.data.descrizione}>
+  <section class="sezione contenitore">
+    <h1>{gruppo.data.nome}</h1>
+    <div class="testo">
+      {gruppo.data.descrizione
+        ? <p>{gruppo.data.descrizione}</p>
+        : <Segnaposto blocco>descrizione del gruppo</Segnaposto>}
+    </div>
+    {gruppo.data.link.length > 0 && (
+      <ul class="link">
+        {gruppo.data.link.map((l) => <li><a href={l.url} rel="noopener">{l.etichetta}</a></li>)}
+      </ul>
+    )}
+  </section>
+  <section class="contenitore">
+    <h2>Sessioni</h2>
+    <GrigliaSessioni sessioni={sessioni} />
+  </section>
+</Base>
+
+<style>
+  .link { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-family: var(--sans); font-size: 0.9rem; }
+</style>

@@ -1,0 +1,39 @@
+---
+import type { Sessione } from '../lib/sessioni';
+import { numeroFormattato, durataFormattata } from '../lib/sessioni';
+
+interface Props { sessione: Sessione; nomeGruppo?: string | null; nomeLuogo?: string | null }
+const { sessione, nomeGruppo = null, nomeLuogo = null } = Astro.props;
+const d = sessione.data;
+const anno = d.dataPubblicazione ? String(d.dataPubblicazione.getFullYear()) : '';
+---
+<li
+  class="scheda"
+  data-gruppo={d.gruppo?.id ?? ''}
+  data-luogo={d.luogo?.id ?? ''}
+  data-anno={anno}
+>
+  <a href={`/sessioni/${sessione.id}/`}>
+    <span class="numero">{numeroFormattato(d.numero)}</span>
+    <img src={`/miniature/${d.youtubeId}.jpg`} alt="" width="480" height="360" loading="lazy" />
+    <span class="titolo">{d.titolo}</span>
+    <span class="meta dettaglio">
+      {nomeGruppo ?? 'Gruppo da definire'} · {nomeLuogo ?? 'Luogo da definire'}
+      {durataFormattata(d.durata) && <> · {durataFormattata(d.durata)}</>}
+    </span>
+  </a>
+</li>
+
+<style>
+  .scheda { list-style: none; }
+  .scheda a { display: grid; gap: 10px; text-decoration: none; }
+  .numero {
+    font-family: var(--serif); font-style: italic; font-size: 2.6rem; line-height: 1;
+    color: var(--accento);
+  }
+  img { width: 100%; height: auto; aspect-ratio: 2.4 / 1; object-fit: cover; filter: saturate(0.85); transition: filter 0.2s; }
+  a:hover img { filter: saturate(1.1); }
+  .titolo { font-size: 1.15rem; line-height: 1.3; }
+  a:hover .titolo { color: var(--accento); }
+  .meta { text-transform: none; letter-spacing: 0.02em; }
+</style>

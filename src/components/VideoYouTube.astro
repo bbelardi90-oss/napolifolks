@@ -1,0 +1,52 @@
+---
+// Video caricato solo al clic, da youtube-nocookie.com.
+// Prima del clic si vede la miniatura salvata in locale: nessuna richiesta a Google.
+interface Props { id: string; titolo: string }
+const { id, titolo } = Astro.props;
+---
+<div class="video" data-id={id} data-titolo={titolo}>
+  <button type="button" class="avvia" aria-label={`Riproduci: ${titolo}`}>
+    <img src={`/miniature/${id}.jpg`} alt="" width="480" height="360" />
+    <span class="play" aria-hidden="true"></span>
+  </button>
+  <p class="nota dettaglio">
+    Il video si carica da YouTube (youtube-nocookie.com) solo quando premi play.{" "}
+    <a href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">Guarda su YouTube</a>
+  </p>
+</div>
+
+<style>
+  .video { width: 100%; }
+  .avvia {
+    position: relative; display: block; width: 100%; aspect-ratio: 16 / 9;
+    padding: 0; border: 0; background: #000; cursor: pointer; overflow: hidden;
+  }
+  .avvia img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.2s; }
+  .avvia:hover img { opacity: 1; }
+  .play {
+    position: absolute; inset: 0; margin: auto; width: 72px; height: 72px; border-radius: 50%;
+    border: 1px solid var(--accento); background: color-mix(in srgb, var(--fondo) 60%, transparent);
+  }
+  .play::after {
+    content: ''; position: absolute; left: 29px; top: 22px;
+    border-style: solid; border-width: 14px 0 14px 22px;
+    border-color: transparent transparent transparent var(--accento);
+  }
+  .nota { margin: 10px 0 0; text-transform: none; letter-spacing: 0.02em; }
+  .video :global(iframe) { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.video').forEach((box) => {
+    const pulsante = box.querySelector('.avvia');
+    pulsante?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${box.dataset.id}?autoplay=1&rel=0`;
+      iframe.title = box.dataset.titolo ?? '';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+      pulsante.replaceWith(iframe);
+    });
+  });
+</script>

@@ -1,0 +1,75 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import VideoYouTube from '../../components/VideoYouTube.astro';
+import Segnaposto from '../../components/Segnaposto.astro';
+import { tutteLeSessioni, numeroFormattato, durataFormattata, dataFormattata, urlYouTube, type Sessione } from '../../lib/sessioni';
+
+export async function getStaticPaths() {
+  const sessioni = await tutteLeSessioni();
+  return sessioni.map((s, i) => ({
+    params: { id: s.id },
+    props: { sessione: s, precedente: sessioni[i + 1] ?? null, successiva: sessioni[i - 1] ?? null },
+  }));
+}
+
+interface Props { sessione: Sessione; precedente: Sessione | null; successiva: Sessione | null }
+const { sessione, precedente, successiva } = Astro.props;
+const d = sessione.data;
+const gruppo = d.gruppo ? await getEntry(d.gruppo) : null;
+const luogo = d.luogo ? await getEntry(d.luogo) : null;
+const data = dataFormattata(d.dataPubblicazione);
+const durata = durataFormattata(d.durata);
+---
+<Base titolo={d.titolo} descrizione={d.descrizione} immagine={`/miniature/${d.youtubeId}.jpg`}>
+  <article class="sezione contenitore">
+    <p class="numero">{numeroFormattato(d.numero)}</p>
+    <h1>{d.titolo}</h1>
+
+    <VideoYouTube id={d.youtubeId} titolo={d.titolo} />
+
+    <dl class="scheda-dati">
+      <div><dt class="dettaglio">Gruppo</dt>
+        <dd>{gruppo ? <a href={`/gruppi/${gruppo.id}/`}>{gruppo.data.nome}</a> : <Segnaposto>gruppo da definire</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Luogo</dt>
+        <dd>{luogo ? <a href="/mappa/">{luogo.data.nome}</a> : <Segnaposto>luogo da definire</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Pubblicato</dt>
+        <dd>{data ?? <Segnaposto>data di pubblicazione</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Durata</dt>
+        <dd>{durata ?? <Segnaposto>durata</Segnaposto>}</dd></div>
+    </dl>
+
+    <div class="testo descrizione">
+      {d.descrizione
+        ? d.descrizione.split(/\n{2,}/).map((p) => <p>{p}</p>)
+        : <Segnaposto blocco>descrizione dal video YouTube</Segnaposto>}
+    </div>
+
+    <p><a class="pulsante" href={urlYouTube(d.youtubeId)} rel="noopener">Apri su YouTube</a></p>
+
+    <nav class="vicine" aria-label="Altre sessioni">
+      {precedente ? <a href={`/sessioni/${precedente.id}/`}>← {numeroFormattato(precedente.data.numero)}</a> : <span></span>}
+      <a href="/sessioni/">Tutte le sessioni</a>
+      {successiva ? <a href={`/sessioni/${successiva.id}/`}>{numeroFormattato(successiva.data.numero)} →</a> : <span></span>}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  article { max-width: 960px; }
+  .numero { font-style: italic; font-size: 3.2rem; line-height: 1; color: var(--accento); margin: 0 0 8px; }
+  h1 { font-size: clamp(1.9rem, 5vw, 3.2rem); margin-bottom: 28px; }
+  .scheda-dati {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px;
+    margin: 32px 0; padding: 24px 0; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea);
+  }
+  dt { margin-bottom: 4px; }
+  dd { margin: 0; }
+  .descrizione { white-space: pre-line; margin-bottom: 32px; }
+  .vicine {
+    display: flex; justify-content: space-between; gap: 12px; margin-top: 56px;
+    font-family: var(--sans); font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .vicine a { text-decoration: none; color: var(--testo-2); }
+  .vicine a:hover { color: var(--accento); }
+</style>

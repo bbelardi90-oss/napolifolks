@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import Segnaposto from '../components/Segnaposto.astro';
+import { SITO } from '../config';
+---
+<Base titolo="Chi siamo">
+  <section class="sezione contenitore">
+    <h1>Chi siamo</h1>
+    <div class="testo">
+      <p>Napoli Folks registra gruppi folk in esterna.</p>
+      <Segnaposto blocco>descrizione del progetto</Segnaposto>
+
+      <h2>Bruno Belardi</h2>
+      <p class="dettaglio">Fonico</p>
+      <Segnaposto blocco>testo su Bruno Belardi</Segnaposto>
+
+      <h2>Dove trovarci</h2>
+      <p>Tutti i video e i materiali stanno su Instagram e YouTube.</p>
+      <ul class="contatti">
+        <li>
+          {SITO.instagram
+            ? <a href={SITO.instagram} rel="noopener">Instagram — napoli folks live</a>
+            : <>Instagram — napoli folks live <Segnaposto>link Instagram</Segnaposto></>}
+        </li>
+        <li><a href={SITO.youtube} rel="noopener">YouTube — Napoli Folks Live</a></li>
+        <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  h2 { margin-top: 1.6em; }
+  .contatti { padding-left: 1.1em; }
+  .contatti li { margin-bottom: 0.4em; }
+</style>

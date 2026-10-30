@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Segnaposto from '../../components/Segnaposto.astro';
+
+const gruppi = (await getCollection('gruppi')).sort((a, b) => a.data.nome.localeCompare(b.data.nome, 'it'));
+---
+<Base titolo="Gruppi">
+  <section class="sezione contenitore">
+    <h1>Gruppi</h1>
+    {gruppi.length === 0
+      ? <Segnaposto blocco>gruppi: da inserire dopo la conferma di Bruno</Segnaposto>
+      : (
+        <ul class="elenco">
+          {gruppi.map((g) => <li><a href={`/gruppi/${g.id}/`}>{g.data.nome}</a></li>)}
+        </ul>
+      )}
+  </section>
+</Base>
+
+<style>
+  .elenco { list-style: none; padding: 0; margin: 0; }
+  .elenco li { border-top: 1px solid var(--linea); }
+  .elenco a { display: block; padding: 16px 0; font-style: italic; font-size: 1.6rem; text-decoration: none; }
+</style>

@@ -1,0 +1,21 @@
+---
+// Mostra un dato mancante tra parentesi quadre, ben visibile nell'anteprima.
+// Uso: <Segnaposto>descrizione del progetto</Segnaposto>
+interface Props { blocco?: boolean }
+const { blocco = false } = Astro.props;
+const Tag = blocco ? 'p' : 'span';
+---
+<Tag class:list={['segnaposto', { blocco }]}>[<slot />]</Tag>
+
+<style>
+  .segnaposto {
+    font-family: var(--sans);
+    font-style: normal;
+    font-size: 0.85em;
+    color: var(--accento);
+    border: 1px dashed var(--accento);
+    padding: 0.05em 0.4em;
+    border-radius: 2px;
+  }
+  .blocco { display: inline-block; padding: 0.6em 0.8em; margin: 0 0 1em; }
+</style>

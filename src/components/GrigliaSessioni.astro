@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import type { Sessione } from '../lib/sessioni';
+import SchedaSessione from './SchedaSessione.astro';
+
+interface Props { sessioni: Sessione[] }
+const { sessioni } = Astro.props;
+const gruppi = new Map((await getCollection('gruppi')).map((g) => [g.id, g.data.nome]));
+const luoghi = new Map((await getCollection('luoghi')).map((l) => [l.id, l.data.nome]));
+---
+<ul class="griglia">
+  {sessioni.map((s) => (
+    <SchedaSessione
+      sessione={s}
+      nomeGruppo={s.data.gruppo ? gruppi.get(s.data.gruppo.id) : null}
+      nomeLuogo={s.data.luogo ? luoghi.get(s.data.luogo.id) : null}
+    />
+  ))}
+</ul>
+
+<style>
+  .griglia {
+    margin: 0; padding: 0; display: grid; gap: 40px 28px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  }
+</style>

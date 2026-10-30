@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+import Mappa from '../components/Mappa.astro';
+---
+<Base titolo="Mappa">
+  <section class="contenitore intestazione-mappa">
+    <h1>Mappa</h1>
+  </section>
+  <Mappa altezza="calc(100svh - 200px)" />
+</Base>
+
+<style>
+  .intestazione-mappa { padding-top: 32px; }
+</style>

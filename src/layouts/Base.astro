@@ -1,0 +1,40 @@
+---
+import '../styles/global.css';
+import { SITO } from '../config';
+import Intestazione from '../components/Intestazione.astro';
+import PiePagina from '../components/PiePagina.astro';
+
+interface Props {
+  titolo?: string;
+  // Meta description: solo testi forniti da Bruno. Se manca, non viene scritta.
+  descrizione?: string | null;
+  immagine?: string;
+}
+const { titolo, descrizione = null, immagine } = Astro.props;
+const titoloPagina = titolo ? `${titolo} — ${SITO.nome}` : SITO.nome;
+const canonico = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titoloPagina}</title>
+    {descrizione && <meta name="description" content={descrizione} />}
+    <link rel="canonical" href={canonico} />
+    <meta property="og:title" content={titoloPagina} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonico} />
+    {immagine && <meta property="og:image" content={new URL(immagine, Astro.site)} />}
+    <meta name="theme-color" content="#11100e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="salta" href="#contenuto">Vai al contenuto</a>
+    <Intestazione />
+    <main id="contenuto">
+      <slot />
+    </main>
+    <PiePagina />
+  </body>
+</html>

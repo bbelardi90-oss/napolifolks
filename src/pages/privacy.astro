@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Segnaposto from '../components/Segnaposto.astro';
+import { SITO } from '../config';
+---
+<Base titolo="Privacy">
+  <section class="sezione contenitore">
+    <h1>Privacy</h1>
+    <div class="testo">
+      <Segnaposto blocco>testo dell'informativa privacy: da fornire o da far verificare</Segnaposto>
+
+      <h2>Titolare del trattamento</h2>
+      <p><Segnaposto>nome e indirizzo del titolare</Segnaposto> — <a href={`mailto:${SITO.email}`}>{SITO.email}</a></p>
+
+      <h2>Come funziona tecnicamente questo sito</h2>
+      <p class="dettaglio">Nota tecnica da verificare prima della pubblicazione</p>
+      <ul>
+        <li>Il sito è statico e non usa cookie propri né strumenti di statistica.</li>
+        <li>I caratteri tipografici sono ospitati sul sito stesso.</li>
+        <li>I video di YouTube si caricano da youtube-nocookie.com solo dopo il clic su play. Da quel momento si applica l'informativa di Google.</li>
+        <li>La mappa carica i riquadri da OpenStreetMap (tile.openstreetmap.org), che riceve l'indirizzo IP del visitatore.</li>
+        <li>Il sito è ospitato su Cloudflare Pages.</li>
+        <li>Le proposte di gruppi arrivano via email a {SITO.email}.</li>
+      </ul>
+    </div>
+  </section>
+</Base>

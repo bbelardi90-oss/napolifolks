@@ -1,0 +1,35 @@
+---
+import { SITO } from '../config';
+import Segnaposto from './Segnaposto.astro';
+---
+<footer class="piede">
+  <div class="contenitore griglia">
+    <p class="marchio">{SITO.nome}</p>
+    <ul class="contatti">
+      <li>
+        {SITO.instagram
+          ? <a href={SITO.instagram} rel="noopener">Instagram</a>
+          : <span>Instagram <Segnaposto>link Instagram</Segnaposto></span>}
+      </li>
+      <li><a href={SITO.youtube} rel="noopener">YouTube</a></li>
+      <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
+    </ul>
+    <ul class="contatti">
+      <li><a href="/privacy/">Privacy</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .piede { border-top: 1px solid var(--linea); padding: 40px 0 56px; margin-top: 40px; }
+  .griglia { display: grid; gap: 20px; }
+  .marchio { font-style: italic; font-size: 1.5rem; margin: 0; }
+  .contatti {
+    list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px;
+    font-family: var(--sans); font-size: 0.85rem; color: var(--testo-2);
+  }
+  .contatti a { text-decoration: none; }
+  @media (min-width: 860px) {
+    .griglia { grid-template-columns: 1fr auto auto; align-items: center; gap: 40px; }
+  }
+</style>

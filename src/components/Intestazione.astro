@@ -1,0 +1,82 @@
+---
+import { SITO } from '../config';
+
+const voci = [
+  { href: '/sessioni/', testo: 'Sessioni' },
+  { href: '/gruppi/', testo: 'Gruppi' },
+  { href: '/mappa/', testo: 'Mappa' },
+  { href: '/chi-siamo/', testo: 'Chi siamo' },
+  { href: '/proponi-un-gruppo/', testo: 'Proponi un gruppo' },
+];
+const percorso = Astro.url.pathname;
+const attiva = (href: string) => percorso.startsWith(href);
+---
+<header class="intestazione">
+  <div class="barra contenitore">
+    <a class="marchio" href="/">{SITO.nome}</a>
+    <details class="menu">
+      <summary aria-label="Menu"><span></span><span></span></summary>
+      <nav aria-label="Principale">
+        <ul>
+          {voci.map((v) => (
+            <li><a href={v.href} aria-current={attiva(v.href) ? 'page' : undefined}>{v.testo}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .intestazione {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--fondo) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--linea);
+  }
+  .barra { display: flex; align-items: center; justify-content: space-between; min-height: 60px; }
+  .marchio {
+    font-family: var(--serif); font-style: italic; font-size: 1.45rem;
+    text-decoration: none;
+  }
+  .menu summary {
+    list-style: none; cursor: pointer; width: 44px; height: 44px;
+    display: flex; flex-direction: column; justify-content: center; gap: 7px; align-items: flex-end;
+  }
+  .menu summary::-webkit-details-marker { display: none; }
+  .menu summary span { display: block; height: 1px; width: 26px; background: var(--testo); }
+  .menu summary span:last-child { width: 18px; }
+  .menu[open] summary span { background: var(--accento); }
+  nav ul { list-style: none; margin: 0; padding: 0; }
+  nav a {
+    font-family: var(--sans); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase;
+    text-decoration: none; color: var(--testo-2);
+  }
+  nav a:hover, nav a[aria-current='page'] { color: var(--accento); }
+
+  /* Telefono: menu a tendina */
+  @media (max-width: 859px) {
+    .menu nav {
+      position: absolute; left: 0; right: 0; top: 100%;
+      background: var(--fondo); border-bottom: 1px solid var(--linea);
+      padding: 8px var(--margine) 20px;
+    }
+    nav li { border-top: 1px solid var(--linea); }
+    nav a { display: block; padding: 14px 0; font-size: 0.9rem; }
+  }
+  /* Schermi larghi: menu sempre visibile */
+  @media (min-width: 860px) {
+    .menu summary { display: none; }
+    .menu > nav { display: block; }
+    nav ul { display: flex; gap: 28px; }
+  }
+</style>
+
+<script>
+  // Su schermi larghi il menu resta aperto; su telefono si chiude dopo il clic.
+  const menu = document.querySelector<HTMLDetailsElement>('.menu');
+  const mq = window.matchMedia('(min-width: 860px)');
+  const aggiorna = () => { if (menu) menu.open = mq.matches; };
+  aggiorna();
+  mq.addEventListener('change', aggiorna);
+</script>
