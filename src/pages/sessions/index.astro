@@ -1,92 +1,20 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import GrigliaSessioni from '../../components/GrigliaSessioni.astro';
 import { tutteLeSessioni } from '../../lib/sessioni';
 
+// Archivio: per ora senza filtri (poche sessioni). Si possono rimettere con
+// gruppo/luogo/anno quando il materiale cresce (vedi la storia del file in git).
 const sessioni = await tutteLeSessioni();
-const gruppi = await getCollection('gruppi');
-const luoghi = await getCollection('luoghi');
-
-// Opzioni dei filtri: solo valori presenti nelle sessioni.
-const idGruppi = new Set(sessioni.map((s) => s.data.gruppo?.id).filter(Boolean));
-const idLuoghi = new Set(sessioni.map((s) => s.data.luogo?.id).filter(Boolean));
-const anni = [...new Set(sessioni.map((s) => s.data.dataPubblicazione?.getFullYear()).filter((a): a is number => !!a))].sort((a, b) => b - a);
-const opzioniGruppi = gruppi.filter((g) => idGruppi.has(g.id)).map((g) => ({ v: g.id, t: g.data.nome }));
-const opzioniLuoghi = luoghi.filter((l) => idLuoghi.has(l.id)).map((l) => ({ v: l.id, t: l.data.nome }));
-const filtri = [
-  { nome: 'artist', etichetta: 'Artist', opzioni: opzioniGruppi },
-  { nome: 'location', etichetta: 'Location', opzioni: opzioniLuoghi },
-  { nome: 'year', etichetta: 'Year', opzioni: anni.map((a) => ({ v: String(a), t: String(a) })) },
-];
 ---
 <Base titolo="Sessions">
   <section class="contenitore intestazione-archivio">
     <h1>Sessions</h1>
-
-    <form class="filtri" aria-label="Filter sessions">
-      {filtri.map((f) => (
-        <label>
-          <span class="dettaglio">{f.etichetta}</span>
-          <select name={f.nome} disabled={f.opzioni.length === 0}>
-            <option value="">{f.opzioni.length ? 'All' : 'Not set yet'}</option>
-            {f.opzioni.map((o) => <option value={o.v}>{o.t}</option>)}
-          </select>
-        </label>
-      ))}
-      <p class="conteggio dettaglio" aria-live="polite"><span id="conteggio">{sessioni.length}</span> sessions</p>
-    </form>
   </section>
   <GrigliaSessioni sessioni={sessioni} />
-  <p class="nessuna contenitore" hidden>No sessions match these filters.</p>
 </Base>
 
 <style>
-  .intestazione-archivio { padding-top: clamp(32px, 6vw, 64px); }
-  .filtri {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;
-    align-items: end; margin: 8px 0 0; padding-bottom: clamp(24px, 4vw, 40px);
-  }
-  label { display: grid; gap: 6px; }
-  select {
-    font-family: var(--sans); font-size: 1rem; color: var(--testo);
-    background: var(--fondo-2); border: 1px solid var(--linea); padding: 10px 12px; border-radius: 0;
-    min-height: 44px;
-  }
-  select:disabled { color: var(--testo-2); }
-  .conteggio { margin: 0; }
+  .intestazione-archivio { padding-block: clamp(32px, 6vw, 64px) clamp(24px, 4vw, 40px); }
+  h1 { margin: 0; }
 </style>
-
-<script>
-  const form = document.querySelector<HTMLFormElement>('.filtri')!;
-  const schede = [...document.querySelectorAll<HTMLElement>('.quadro')];
-  const conteggio = document.getElementById('conteggio')!;
-  const nessuna = document.querySelector<HTMLElement>('.nessuna')!;
-
-  function applica() {
-    const f = new FormData(form);
-    const params = new URLSearchParams();
-    let visibili = 0;
-    for (const s of schede) {
-      const ok = ['artist', 'location', 'year'].every((k) => {
-        const v = String(f.get(k) ?? '');
-        return !v || s.dataset[k] === v;
-      });
-      s.hidden = !ok;
-      if (ok) visibili++;
-    }
-    for (const [k, v] of f) if (v) params.set(k, String(v));
-    history.replaceState(null, '', params.size ? `?${params}` : location.pathname);
-    conteggio.textContent = String(visibili);
-    nessuna.hidden = visibili > 0;
-  }
-
-  // Ripristina i filtri dall'indirizzo (link condivisibili).
-  const iniziali = new URLSearchParams(location.search);
-  for (const [k, v] of iniziali) {
-    const sel = form.elements.namedItem(k);
-    if (sel instanceof HTMLSelectElement) sel.value = v;
-  }
-  form.addEventListener('change', applica);
-  if (iniziali.size) applica();
-</script>

@@ -29,8 +29,9 @@ si inseriscono solo dopo la conferma di Bruno.
 
 Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti).
 Questo file e i commenti nel codice restano in italiano.
-Pagine: `/`, `/sessions/`, `/sessions/NN/`, `/artists/`, `/artists/<slug>/`, `/about/`,
-`/suggest/`, `/privacy/`. Nell'interfaccia i "gruppi" si chiamano "Artists".
+Pagine: `/`, `/sessions/` (senza filtri, per ora), `/sessions/NN/`, `/about/`, `/suggest/`,
+`/privacy/`. La sezione Artists è stata tolta per ora (i dati dei gruppi restano in
+`src/content/gruppi/`, pronti se si rimette). Nell'interfaccia i "gruppi" si chiamano "Artists".
 Ruoli in About: Art Director, Filmmaker, Sound Engineer (decisi con Bruno: non usare
 le diciture dei titoli di coda dei video né quelle di Instagram/YouTube).
 
