@@ -40,21 +40,24 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     /* Il riquadro si "gonfia" lentamente: 1,2 s, parte piano, cresce, si assesta piano.
        Proprietà scritte per esteso (senza variabili) per la massima compatibilità. */
     transition-property: transform, box-shadow, z-index;
-    transition-duration: 1.2s, 1.2s, 0s;
-    transition-timing-function: cubic-bezier(0.45, 0, 0.25, 1), cubic-bezier(0.45, 0, 0.25, 1), linear;
-    /* Uscita: torna piccolo con calma e scende sotto i vicini solo alla fine. */
-    transition-delay: 0s, 0s, 1.2s;
+    /* Uscita: il livello (z-index) scende a gradini da 20 a 0 (il primo subito) mentre il riquadro
+       si rimpicciolisce: resta sopra i video fermi, ma subito sotto quello nuovo. */
+    transition-duration: 1.2s, 1.2s, 1.2s;
+    transition-timing-function: cubic-bezier(0.45, 0, 0.25, 1), cubic-bezier(0.45, 0, 0.25, 1), steps(20, jump-start);
+    transition-delay: 0s, 0s, 0s;
     will-change: transform;
   }
   /* Entrata: piccola attesa, così passando veloce sopra i video non si accendono tutti. */
-  .quadro:hover, .quadro.attivo { transition-delay: 0.08s, 0.08s, 0s; }
+  /* Entrata: il livello sale subito al massimo (sopra tutti), la crescita parte dopo
+     una piccola attesa, così passando veloce sopra i video non si accendono tutti. */
+  .quadro:hover, .quadro.attivo { transition-duration: 1.2s, 1.2s, 0s; transition-delay: 0.08s, 0.08s, 0s; }
   /* Col dito premuto (telefono) il riquadro cresce un po' sopra i vicini. */
-  .quadro.attivo { transform: scale(1.06); z-index: 2; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
+  .quadro.attivo { transform: scale(1.06); z-index: 20; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
   /* Col mouse: i riquadri piccoli (tre colonne) si ingrandiscono di un terzo e vanno
      sopra i vicini; quelli a tutta larghezza cambiano solo di poco.
      Volutamente animato anche con "Riduci movimento" attivo (scelta di Bruno). */
   @media (hover: hover) {
-    .quadro:hover { z-index: 3; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75); transform: scale(1.02); }
+    .quadro:hover { z-index: 20; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75); transform: scale(1.02); }
   }
   @media (hover: hover) and (min-width: 900px) {
     .quadro:not(:first-child):hover { transform: scale(1.35); }
