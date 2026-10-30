@@ -56,9 +56,14 @@ Ruoli in About: Art Director, Filmmaker, Sound Engineer.
 - crea una bozza per ogni video nuovo, con gruppo e luogo da definire.
 Il feed contiene solo gli ultimi 15 video; la durata non è nel feed e va completata a parte.
 
-Miniature: lo script scarica quelle grandi in `.miniature-originali/`; poi
-`python3 scripts/ritaglia-miniature.py .miniature-originali` toglie le bande nere,
-le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni).
+Anteprime dei video: il logo Napoli Folks è stampato dentro i video, quindi le
+anteprime sono fotogrammi automatici di YouTube (maxres1/2/3) ritagliati per lasciare
+fuori il logo. Le scelte (fotogramma e ritaglio) stanno in `src/data/fotogrammi.json`;
+`python3 scripts/fotogrammi.py` le applica, salva in `public/miniature/` e aggiorna
+`src/data/miniature.json`. Per un video nuovo: aggiungi una voce in `fotogrammi.json`
+scegliendo fotogramma e ritaglio guardando dove sta il logo.
+(`scripts/ritaglia-miniature.py` resta per le copertine intere senza bande nere.)
+Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 
 ## Grafica
 

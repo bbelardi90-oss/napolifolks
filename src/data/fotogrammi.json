@@ -1,0 +1,11 @@
+{
+  "_nota": "Fotogramma automatico di YouTube (1, 2 o 3 = circa 25%, 50%, 75% del video) e ritaglio [x0, y0, x1, y1] in frazioni del fotogramma 1280x720, scelto per lasciare fuori il logo stampato nel video. Applicare con: python3 scripts/fotogrammi.py",
+  "EJ1twa7whLw": { "fotogramma": 2, "ritaglio": [0.00, 0.07, 0.82, 0.78] },
+  "zlENqOyks00": { "fotogramma": 2, "ritaglio": [0.00, 0.14, 0.81, 0.78] },
+  "5rIYD68LET4": { "fotogramma": 2, "ritaglio": [0.18, 0.13, 1.00, 0.74] },
+  "Kmc9C54HJtA": { "fotogramma": 1, "ritaglio": [0.00, 0.16, 0.79, 0.75] },
+  "TFSMFPwZcRo": { "fotogramma": 2, "ritaglio": [0.18, 0.14, 1.00, 0.78] },
+  "Nxw6dU_qk5Q": { "fotogramma": 3, "ritaglio": [0.00, 0.16, 1.00, 0.73] },
+  "I-k7ueZCHIs": { "fotogramma": 1, "ritaglio": [0.00, 0.11, 0.88, 0.76] },
+  "_LlbLn6wRq0": { "fotogramma": 2, "ritaglio": [0.00, 0.06, 0.86, 0.89] }
+}
