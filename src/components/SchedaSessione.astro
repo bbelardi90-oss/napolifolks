@@ -37,27 +37,22 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
 <style>
   .quadro {
     list-style: none; position: relative; z-index: 0;
-    container-type: inline-size; /* testi in proporzione alla larghezza del riquadro */
-    --durata: 1.2s;
-    --curva: cubic-bezier(0.45, 0, 0.25, 1); /* parte piano, cresce, si assesta piano: crescita graduale */
-    /* Uscita: il riquadro torna piccolo con calma e scende sotto i vicini solo alla fine. */
-    transition:
-      transform var(--durata) var(--curva),
-      box-shadow var(--durata) var(--curva),
-      z-index 0s linear var(--durata);
+    /* Il riquadro si "gonfia" lentamente: 1,2 s, parte piano, cresce, si assesta piano.
+       Proprietà scritte per esteso (senza variabili) per la massima compatibilità. */
+    transition-property: transform, box-shadow, z-index;
+    transition-duration: 1.2s, 1.2s, 0s;
+    transition-timing-function: cubic-bezier(0.45, 0, 0.25, 1), cubic-bezier(0.45, 0, 0.25, 1), linear;
+    /* Uscita: torna piccolo con calma e scende sotto i vicini solo alla fine. */
+    transition-delay: 0s, 0s, 1.2s;
+    will-change: transform;
   }
   /* Entrata: piccola attesa, così passando veloce sopra i video non si accendono tutti. */
-  .quadro:hover, .quadro.attivo {
-    transition:
-      transform var(--durata) var(--curva) 0.08s,
-      box-shadow var(--durata) var(--curva) 0.08s,
-      z-index 0s;
-  }
-  /* Ingrandimento: col dito premuto (e col mouse sopra) il riquadro cresce
-     e si appoggia sopra i video vicini. */
+  .quadro:hover, .quadro.attivo { transition-delay: 0.08s, 0.08s, 0s; }
+  /* Col dito premuto (telefono) il riquadro cresce un po' sopra i vicini. */
   .quadro.attivo { transform: scale(1.06); z-index: 2; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
   /* Col mouse: i riquadri piccoli (tre colonne) si ingrandiscono di un terzo e vanno
-     sopra i vicini; quelli a tutta larghezza cambiano solo di poco. */
+     sopra i vicini; quelli a tutta larghezza cambiano solo di poco.
+     Volutamente animato anche con "Riduci movimento" attivo (scelta di Bruno). */
   @media (hover: hover) {
     .quadro:hover { z-index: 3; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75); transform: scale(1.02); }
   }
@@ -65,10 +60,7 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     .quadro:not(:first-child):hover { transform: scale(1.35); }
     .quadro:last-child:nth-child(3n + 2):not(:first-child):hover { transform: scale(1.02); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .quadro, .quadro.attivo, .quadro:hover { transition: none; transform: none; }
-  }
-  a { position: relative; display: block; text-decoration: none; color: var(--testo); }
+  a { position: relative; display: block; text-decoration: none; color: var(--testo); container-type: inline-size; }
   /* Tutti i riquadri hanno lo stesso formato: l'immagine viene ritagliata al centro. */
   img { display: block; width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
   .velo {
