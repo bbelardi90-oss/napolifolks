@@ -1,5 +1,6 @@
 // Importa i video del canale YouTube "Napoli Folks Live" dal feed RSS pubblico.
-// - Completa dataPubblicazione e descrizione delle sessioni dove sono ancora null.
+// - Completa dataPubblicazione e descrizioneOriginale (testo YouTube) dove sono ancora null.
+//   Il campo descrizione (inglese, mostrato sul sito) si scrive a parte.
 // - Crea una bozza per ogni video nuovo (gruppo e luogo restano null: da definire con Bruno).
 // - Scarica la miniatura grande (1280x720) dei video nuovi in .miniature-originali/;
 //   poi va ritagliata con: python3 scripts/ritaglia-miniature.py .miniature-originali
@@ -54,7 +55,7 @@ for (const v of video) {
   const esistente = perId.get(v.id);
   if (esistente) {
     let t = completa(esistente.testo, 'dataPubblicazione', v.data);
-    t = completa(t, 'descrizione', v.descrizione);
+    t = completa(t, 'descrizioneOriginale', v.descrizione);
     if (t !== esistente.testo) {
       await writeFile(path.join(DIR_SESSIONI, esistente.f), t);
       console.log(`Aggiornata: ${esistente.f}`);
@@ -73,7 +74,8 @@ numero: ${Number.isFinite(numero) ? numero : 'null'}
 youtubeId: ${JSON.stringify(v.id)}
 durata: null  # [durata] — non presente nel feed RSS
 dataPubblicazione: ${v.data ? JSON.stringify(v.data) : 'null'}
-descrizione: ${v.descrizione ? JSON.stringify(v.descrizione) : 'null'}
+descrizione: null  # [English description] — da preparare dal testo originale
+descrizioneOriginale: ${v.descrizione ? JSON.stringify(v.descrizione) : 'null'}
 # Da definire con Bruno: non dedurli dal titolo.
 gruppo: null
 luogo: null

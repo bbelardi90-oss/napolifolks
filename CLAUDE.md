@@ -57,7 +57,10 @@ le diciture dei titoli di coda dei video né quelle di Instagram/YouTube).
 - crea una bozza per ogni video nuovo, con gruppo e luogo da definire.
 Il feed contiene solo gli ultimi 15 video; la durata non è nel feed e va completata a parte.
 Dietro un proxy (es. ambiente cloud) lanciare con `NODE_USE_ENV_PROXY=1`.
-Le descrizioni sono copiate da YouTube così come sono (italiano e inglese insieme).
+Descrizioni: `descrizioneOriginale` = testo YouTube completo (italiano e inglese insieme),
+non mostrato sul sito. `descrizione` = solo inglese, mostrato sul sito: la parte inglese
+copiata da YouTube; dove manca, tradotta fedelmente dall'italiano (segnalato nel file).
+Mai italiano e inglese nella stessa pagina. Altre lingue: in futuro, come traduzione del sito.
 
 Anteprime dei video: il logo Napoli Folks è stampato dentro i video, quindi le
 anteprime sono fotogrammi automatici di YouTube (maxres1/2/3) ritagliati per lasciare
