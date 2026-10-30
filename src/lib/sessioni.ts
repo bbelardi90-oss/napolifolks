@@ -16,16 +16,18 @@ export async function tutteLeSessioni(): Promise<Sessione[]> {
 }
 
 // Titolo senza la parte ripetuta "Napoli Folks Live #N -": resta il testo
-// del video così com'è (artista e brano), senza interpretarlo.
+// del video (artista e brano). La prima virgola, che nei titoli separa
+// artista e brano, diventa una lineetta.
 export function titoloBreve(titolo: string): string {
   return titolo
     .replace(/^\s*Napoli Folks Live\s*-?\s*(#\s*\d+)?\s*-?\s*/i, '')
     .replace(/\s{2,}/g, ' ')
+    .replace(/\s*,\s*/, ' – ')
     .trim();
 }
 
 export function numeroFormattato(n: number | null): string {
-  return n === null ? '—' : String(n).padStart(2, '0');
+  return n === null ? '—' : `#${n}`;
 }
 
 export function durataFormattata(secondi: number | null): string | null {

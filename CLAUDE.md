@@ -58,7 +58,8 @@ le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   sul video che sta al centro dello schermo mentre si scorre.
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
-  del titolo del video così com'è (`titoloBreve` in `src/lib/sessioni.ts`).
+  del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
+  (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
 - Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
   (ritagliato e reso trasparente). Va sostituito con il file originale.
 - La mappa è stata tolta su richiesta di Bruno.
