@@ -31,8 +31,8 @@ si inseriscono solo dopo la conferma di Bruno.
 
 Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti).
 Questo file e i commenti nel codice restano in italiano.
-Pagine: `/`, `/sessions/` (senza filtri, per ora), `/sessions/NN/`, `/about/`, `/suggest/`,
-`/privacy/`. La sezione Artists è stata tolta per ora (i dati dei gruppi restano in
+Pagine: `/` (tutti i video), `/sessions/NN/`, `/about/`, `/suggest/`, `/privacy/`.
+La pagina archivio `/sessions/` è stata tolta: i video sono già tutti in home. La sezione Artists è stata tolta per ora (i dati dei gruppi restano in
 `src/content/gruppi/`, pronti se si rimette). Nell'interfaccia i "gruppi" si chiamano "Artists".
 Ruoli in About: Art Director, Filmmaker, Sound Engineer (decisi con Bruno: non usare
 le diciture dei titoli di coda dei video né quelle di Instagram/YouTube).
@@ -76,8 +76,10 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 
 ## Grafica
 
-- Sito minimale, centrato sui video ("quadri"): in home e in archivio i fotogrammi sono
-  a tutta larghezza, uno sotto l'altro, senza spazi. La home contiene solo i video.
+- Sito minimale, centrato sui video ("quadri"): la home contiene solo i video, senza spazi
+  tra i riquadri. Da telefono una colonna; da computer (≥ 900 px) la disposizione è in
+  `src/components/GrigliaSessioni.astro` (`data-layout`: due | tre | primo | ritmo | cinema;
+  predefinita "due"). Nell'anteprima si provano con `?layout=...` nell'indirizzo.
 - Tutti i riquadri hanno lo stesso formato 2,39:1 (`object-fit: cover`, ritaglio al centro).
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).

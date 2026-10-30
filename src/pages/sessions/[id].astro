@@ -41,7 +41,7 @@ const riassunto = d.descrizione
 
     <nav class="vicine" aria-label="More sessions">
       {precedente ? <a href={`/sessions/${precedente.id}/`}>← {numeroFormattato(precedente.data.numero)}</a> : <span></span>}
-      <a href="/sessions/">All sessions</a>
+      <a href="/">All sessions</a>
       {successiva ? <a href={`/sessions/${successiva.id}/`}>{numeroFormattato(successiva.data.numero)} →</a> : <span></span>}
     </nav>
   </article>

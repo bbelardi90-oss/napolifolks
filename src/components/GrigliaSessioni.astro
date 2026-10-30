@@ -5,17 +5,52 @@ import SchedaSessione from './SchedaSessione.astro';
 interface Props { sessioni: Sessione[] }
 const { sessioni } = Astro.props;
 ---
-<ul class="galleria">
+<!--
+  Disposizione dei video su computer (da telefono sempre una colonna).
+  Predefinita: "due". Per provare le altre nell'anteprima: ?layout=tre | primo | ritmo | cinema
+-->
+<ul class="galleria" data-layout="due">
   {sessioni.map((s, i) => <SchedaSessione sessione={s} primo={i === 0} />)}
 </ul>
 
 <style>
-  /* I video uno sotto l'altro, a tutta larghezza, senza spazi. */
+  /* Video senza spazi tra i riquadri. overflow-x: clip taglia lo zoom ai lati,
+     così la pagina non scorre in orizzontale. */
   .galleria { margin: 0; padding: 0; display: grid; gap: 0; overflow-x: clip; }
-  /* overflow-x: clip taglia l'ingrandimento ai lati, così la pagina non scorre in orizzontale. */
+
+  @media (min-width: 900px) {
+    /* due: due colonne uguali */
+    .galleria[data-layout='due'] { grid-template-columns: repeat(2, 1fr); }
+    /* tre: tre colonne (griglia da 6: ogni video ne occupa 2; nell'ultima riga
+       incompleta i video si allargano per riempirla) */
+    .galleria[data-layout='tre'] { grid-template-columns: repeat(6, 1fr); }
+    .galleria[data-layout='tre'] > :global(*) { grid-column: span 2; }
+    .galleria[data-layout='tre'] > :global(:nth-last-child(2):nth-child(3n + 1)),
+    .galleria[data-layout='tre'] > :global(:last-child:nth-child(3n + 2)) { grid-column: span 3; }
+    .galleria[data-layout='tre'] > :global(:last-child:nth-child(3n + 1)) { grid-column: 1 / -1; }
+    /* primo: l'ultima sessione a tutta larghezza, le altre su due colonne */
+    .galleria[data-layout='primo'] { grid-template-columns: repeat(2, 1fr); }
+    .galleria[data-layout='primo'] > :global(:first-child) { grid-column: 1 / -1; }
+    /* ritmo: una riga grande, poi una da due, e così via */
+    .galleria[data-layout='ritmo'] { grid-template-columns: repeat(2, 1fr); }
+    .galleria[data-layout='ritmo'] > :global(:nth-child(3n + 1)) { grid-column: 1 / -1; }
+    /* cinema: una colonna sola ma più stretta, centrata */
+    .galleria[data-layout='cinema'] { max-width: 1100px; margin-inline: auto; }
+
+    /* Se in una riga da due resta un video da solo, occupa tutta la riga. */
+    .galleria[data-layout='due'] > :global(:last-child:nth-child(odd)),
+    .galleria[data-layout='primo'] > :global(:last-child:nth-child(even)),
+    .galleria[data-layout='ritmo'] > :global(:last-child:nth-child(3n + 2)) { grid-column: 1 / -1; }
+  }
 </style>
 
 <script>
+  // Prova delle disposizioni nell'anteprima: ?layout=tre | primo | ritmo | cinema
+  const scelta = new URLSearchParams(location.search).get('layout');
+  if (scelta && ['due', 'tre', 'primo', 'ritmo', 'cinema'].includes(scelta)) {
+    document.querySelectorAll<HTMLElement>('.galleria').forEach((g) => (g.dataset.layout = scelta));
+  }
+
   // Su telefono il titolo compare solo mentre il dito tocca il video
   // e sparisce quando il dito si alza.
   document.querySelectorAll('.quadro').forEach((q) => {
