@@ -1,15 +1,15 @@
 ---
-// Una sessione esposta come un quadro: immagine grande nelle sue proporzioni,
-// sotto una didascalia con numero, titolo e dati.
+// Una sessione: il fotogramma del video a tutta larghezza.
+// Il titolo compare sopra l'immagine, scurendola, al passaggio del mouse
+// (su telefono: quando il video passa al centro dello schermo scorrendo).
 import type { Sessione } from '../lib/sessioni';
-import { numeroFormattato, durataFormattata, dimensioniMiniatura } from '../lib/sessioni';
+import { numeroFormattato, titoloBreve, dimensioniMiniatura } from '../lib/sessioni';
 
-interface Props { sessione: Sessione; nomeGruppo?: string | null; nomeLuogo?: string | null; primo?: boolean }
-const { sessione, nomeGruppo = null, nomeLuogo = null, primo = false } = Astro.props;
+interface Props { sessione: Sessione; primo?: boolean }
+const { sessione, primo = false } = Astro.props;
 const d = sessione.data;
 const anno = d.dataPubblicazione ? String(d.dataPubblicazione.getFullYear()) : '';
 const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
-const durata = durataFormattata(d.durata);
 ---
 <li
   class="quadro"
@@ -18,48 +18,41 @@ const durata = durataFormattata(d.durata);
   data-anno={anno}
 >
   <a href={`/sessioni/${sessione.id}/`}>
-    <figure>
-      <img
-        src={`/miniature/${d.youtubeId}.jpg`}
-        alt=""
-        width={larghezza}
-        height={altezza}
-        loading={primo ? 'eager' : 'lazy'}
-        decoding="async"
-      />
-      <figcaption>
-        <span class="numero">{numeroFormattato(d.numero)}</span>
-        <span class="didascalia">
-          <span class="titolo">{d.titolo}</span>
-          <span class="meta dettaglio">
-            {nomeGruppo ?? 'Gruppo da definire'} · {nomeLuogo ?? 'Luogo da definire'}{durata && ` · ${durata}`}
-          </span>
-        </span>
-      </figcaption>
-    </figure>
+    <img
+      src={`/miniature/${d.youtubeId}.jpg`}
+      alt=""
+      width={larghezza}
+      height={altezza}
+      loading={primo ? 'eager' : 'lazy'}
+      fetchpriority={primo ? 'high' : undefined}
+      decoding="async"
+    />
+    <span class="velo">
+      <span class="numero">{numeroFormattato(d.numero)}</span>
+      <span class="titolo">{titoloBreve(d.titolo)}</span>
+    </span>
   </a>
 </li>
 
 <style>
   .quadro { list-style: none; }
-  a { display: block; text-decoration: none; }
-  figure { margin: 0; }
-  img {
-    width: 100%; height: auto;
-    filter: saturate(0.9) brightness(0.95);
-    transition: filter 0.4s ease;
-  }
-  a:hover img, a:focus-visible img { filter: saturate(1.05) brightness(1); }
-  figcaption {
-    display: grid; grid-template-columns: auto 1fr; gap: 0 clamp(16px, 3vw, 40px);
-    align-items: baseline; padding-top: clamp(16px, 2.5vw, 28px);
+  a { position: relative; display: block; text-decoration: none; color: var(--testo); }
+  img { display: block; width: 100%; height: auto; }
+  .velo {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 0.4em; padding: 0 var(--margine); text-align: center;
+    background: rgba(8, 8, 7, 0.62);
+    opacity: 0; transition: opacity 0.35s ease;
   }
   .numero {
-    font-family: var(--serif); font-style: italic; line-height: 0.9;
-    font-size: clamp(2.8rem, 7vw, 5.5rem); color: var(--accento);
+    font-family: var(--serif); font-style: italic; line-height: 1;
+    font-size: clamp(2rem, 6vw, 4.5rem); color: var(--accento);
   }
-  .didascalia { display: grid; gap: 8px; }
-  .titolo { font-size: clamp(1.15rem, 2.2vw, 1.6rem); line-height: 1.25; }
-  a:hover .titolo { color: var(--accento); }
-  .meta { text-transform: none; letter-spacing: 0.02em; }
+  .titolo {
+    font-family: var(--serif); font-style: italic; line-height: 1.2;
+    font-size: clamp(1.15rem, 3vw, 2.4rem); max-width: 26em;
+  }
+  a:hover .velo, a:focus-visible .velo, .quadro.attivo .velo { opacity: 1; }
+  a:focus-visible { outline-offset: -3px; }
 </style>

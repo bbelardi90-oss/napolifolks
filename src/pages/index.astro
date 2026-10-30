@@ -1,58 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
-import Segnaposto from '../components/Segnaposto.astro';
 import GrigliaSessioni from '../components/GrigliaSessioni.astro';
 import { tutteLeSessioni } from '../lib/sessioni';
-import { SITO } from '../config';
 
 const sessioni = await tutteLeSessioni();
 ---
 <Base>
-  <section class="apertura">
-    <!-- [fotogramma home]: sostituire con l'immagine scelta da Bruno -->
-    <div class="fotogramma" role="presentation"></div>
-    <div class="testo-apertura contenitore">
-      <h1><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" /></h1>
-      <p><Segnaposto>sottotitolo</Segnaposto></p>
-      <p class="fotogramma-nota"><Segnaposto>fotogramma home</Segnaposto></p>
-    </div>
-  </section>
-
-  <section class="sezione contenitore">
-    <p class="testo">Napoli Folks registra gruppi folk in esterna.</p>
-    <Segnaposto blocco>descrizione del progetto</Segnaposto>
-  </section>
-
-  <section class="contenitore" aria-labelledby="t-sessioni">
-    <div class="titolo-sezione">
-      <h2 id="t-sessioni">Sessioni</h2>
-      <a class="dettaglio" href="/sessioni/">Archivio con filtri →</a>
-    </div>
-    <GrigliaSessioni sessioni={sessioni} />
-  </section>
+  <h1 class="nascosto">Napoli Folks</h1>
+  <GrigliaSessioni sessioni={sessioni} />
 </Base>
-
-<style>
-  .apertura {
-    position: relative; min-height: calc(100svh - 61px);
-    display: flex; align-items: flex-end;
-  }
-  .fotogramma {
-    position: absolute; inset: 0;
-    background:
-      linear-gradient(to top, var(--fondo) 0%, transparent 55%),
-      repeating-linear-gradient(135deg, var(--fondo-2) 0 2px, transparent 2px 14px),
-      var(--fondo);
-  }
-  .testo-apertura { position: relative; padding-bottom: clamp(32px, 8vh, 80px); }
-  h1 { margin: 0 0 0.3em; line-height: 0; }
-  h1 img { width: min(560px, 80vw); height: auto; }
-  .fotogramma-nota { position: absolute; right: var(--margine); top: -40vh; }
-  .titolo-sezione {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
-    border-bottom: 1px solid var(--linea); margin-bottom: clamp(40px, 6vw, 72px);
-  }
-  .titolo-sezione a { text-decoration: none; white-space: nowrap; }
-  .titolo-sezione a:hover { color: var(--accento); }
-  @media (max-width: 600px) { .fotogramma-nota { position: static; } }
-</style>

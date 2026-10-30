@@ -53,8 +53,12 @@ le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni
 
 ## Grafica
 
-- I video sono "quadri": in home e in archivio uno per riga, grandi, con molto spazio
-  intorno e una didascalia sotto (numero, titolo, gruppo, luogo, durata).
+- Sito minimale, centrato sui video ("quadri"): in home e in archivio i fotogrammi sono
+  a tutta larghezza, uno sotto l'altro, senza spazi. La home contiene solo i video.
+- Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
+  sul video che sta al centro dello schermo mentre si scorre.
+- Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
+  del titolo del video così com'è (`titoloBreve` in `src/lib/sessioni.ts`).
 - Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
   (ritagliato e reso trasparente). Va sostituito con il file originale.
 - La mappa è stata tolta su richiesta di Bruno.

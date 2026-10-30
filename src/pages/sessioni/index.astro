@@ -21,7 +21,7 @@ const filtri = [
 ];
 ---
 <Base titolo="Sessioni">
-  <section class="sezione contenitore">
+  <section class="contenitore intestazione-archivio">
     <h1>Sessioni</h1>
 
     <form class="filtri" aria-label="Filtra le sessioni">
@@ -36,16 +36,16 @@ const filtri = [
       ))}
       <p class="conteggio dettaglio" aria-live="polite"><span id="conteggio">{sessioni.length}</span> sessioni</p>
     </form>
-
-    <GrigliaSessioni sessioni={sessioni} />
-    <p class="nessuna" hidden>Nessuna sessione con questi filtri.</p>
   </section>
+  <GrigliaSessioni sessioni={sessioni} />
+  <p class="nessuna contenitore" hidden>Nessuna sessione con questi filtri.</p>
 </Base>
 
 <style>
+  .intestazione-archivio { padding-top: clamp(32px, 6vw, 64px); }
   .filtri {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;
-    align-items: end; margin: 8px 0 40px; padding-bottom: 24px; border-bottom: 1px solid var(--linea);
+    align-items: end; margin: 8px 0 0; padding-bottom: clamp(24px, 4vw, 40px);
   }
   label { display: grid; gap: 6px; }
   select {

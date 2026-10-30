@@ -3,7 +3,7 @@ import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import VideoYouTube from '../../components/VideoYouTube.astro';
 import Segnaposto from '../../components/Segnaposto.astro';
-import { tutteLeSessioni, numeroFormattato, durataFormattata, dataFormattata, urlYouTube, type Sessione } from '../../lib/sessioni';
+import { tutteLeSessioni, numeroFormattato, titoloBreve, durataFormattata, dataFormattata, urlYouTube, type Sessione } from '../../lib/sessioni';
 
 export async function getStaticPaths() {
   const sessioni = await tutteLeSessioni();
@@ -21,10 +21,10 @@ const luogo = d.luogo ? await getEntry(d.luogo) : null;
 const data = dataFormattata(d.dataPubblicazione);
 const durata = durataFormattata(d.durata);
 ---
-<Base titolo={d.titolo} descrizione={d.descrizione} immagine={`/miniature/${d.youtubeId}.jpg`}>
+<Base titolo={`${numeroFormattato(d.numero)} · ${titoloBreve(d.titolo)}`} descrizione={d.descrizione} immagine={`/miniature/${d.youtubeId}.jpg`}>
   <article class="sezione contenitore">
     <p class="numero">{numeroFormattato(d.numero)}</p>
-    <h1>{d.titolo}</h1>
+    <h1>{titoloBreve(d.titolo)}</h1>
 
     <VideoYouTube id={d.youtubeId} titolo={d.titolo} />
 

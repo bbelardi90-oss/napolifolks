@@ -1,28 +1,36 @@
 ---
-import { getCollection } from 'astro:content';
 import type { Sessione } from '../lib/sessioni';
 import SchedaSessione from './SchedaSessione.astro';
 
 interface Props { sessioni: Sessione[] }
 const { sessioni } = Astro.props;
-const gruppi = new Map((await getCollection('gruppi')).map((g) => [g.id, g.data.nome]));
-const luoghi = new Map((await getCollection('luoghi')).map((l) => [l.id, l.data.nome]));
 ---
 <ul class="galleria">
-  {sessioni.map((s, i) => (
-    <SchedaSessione
-      sessione={s}
-      primo={i === 0}
-      nomeGruppo={s.data.gruppo ? gruppi.get(s.data.gruppo.id) : null}
-      nomeLuogo={s.data.luogo ? luoghi.get(s.data.luogo.id) : null}
-    />
-  ))}
+  {sessioni.map((s, i) => <SchedaSessione sessione={s} primo={i === 0} />)}
 </ul>
 
 <style>
-  /* Galleria: un video per riga, grande, con molto spazio intorno. */
-  .galleria {
-    margin: 0; padding: 0;
-    display: grid; gap: clamp(72px, 12vw, 168px);
-  }
+  /* I video uno sotto l'altro, a tutta larghezza, senza spazi. */
+  .galleria { margin: 0; padding: 0; display: grid; gap: 0; }
 </style>
+
+<script>
+  // Su telefono (niente mouse) il titolo compare sul video che passa
+  // al centro dello schermo mentre si scorre.
+  if (window.matchMedia('(hover: none)').matches) {
+    let attivo: Element | null = null;
+    let inAttesa = false;
+    const aggiorna = () => {
+      inAttesa = false;
+      const sotto = document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest('.quadro') ?? null;
+      if (sotto === attivo) return;
+      attivo?.classList.remove('attivo');
+      sotto?.classList.add('attivo');
+      attivo = sotto;
+    };
+    const pianifica = () => { if (!inAttesa) { inAttesa = true; requestAnimationFrame(aggiorna); } };
+    addEventListener('scroll', pianifica, { passive: true });
+    addEventListener('resize', pianifica);
+    pianifica();
+  }
+</script>

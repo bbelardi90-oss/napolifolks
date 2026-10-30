@@ -15,6 +15,15 @@ export async function tutteLeSessioni(): Promise<Sessione[]> {
   return s.sort((a, b) => (b.data.numero ?? 0) - (a.data.numero ?? 0));
 }
 
+// Titolo senza la parte ripetuta "Napoli Folks Live #N -": resta il testo
+// del video così com'è (artista e brano), senza interpretarlo.
+export function titoloBreve(titolo: string): string {
+  return titolo
+    .replace(/^\s*Napoli Folks Live\s*-?\s*(#\s*\d+)?\s*-?\s*/i, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 export function numeroFormattato(n: number | null): string {
   return n === null ? '—' : String(n).padStart(2, '0');
 }
