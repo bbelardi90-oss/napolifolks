@@ -23,8 +23,8 @@ const link = [
     <h1>About</h1>
     <div class="testo">
       <!-- Testo scritto a partire dalle parole di Bruno: da approvare. -->
-      <p>Napoli Folks records folk musicians outdoors, in Naples.</p>
-      <p>We catch the artists who happen to pass through the city. Once in a while we record outside it, as we did in Sessa Aurunca.</p>
+      <p class="apertura">Folk musicians passing through Naples, recorded outdoors.</p>
+      <p>Napoli Folks records folk musicians outdoors, in Naples. We catch the artists who happen to pass through the city.</p>
     </div>
 
     <ul class="squadra">
@@ -60,6 +60,7 @@ const link = [
 </Base>
 
 <style>
+  .apertura { font-family: var(--serif); font-size: clamp(1.35rem, 3.2vw, 1.9rem); line-height: 1.25; margin-bottom: 0.6em; }
   .squadra {
     list-style: none; margin: clamp(40px, 7vw, 80px) 0; padding: 0;
     display: grid; gap: clamp(40px, 5vw, 56px) clamp(24px, 3vw, 40px);

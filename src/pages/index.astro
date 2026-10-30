@@ -7,19 +7,5 @@ const sessioni = await tutteLeSessioni();
 ---
 <Base>
   <h1 class="nascosto">Napoli Folks</h1>
-  <!-- Frase scritta a partire dalle parole di Bruno: da approvare. -->
-  <p class="frase contenitore">Folk musicians passing through Naples, recorded outdoors.</p>
   <GrigliaSessioni sessioni={sessioni} />
 </Base>
-
-<style>
-  .frase {
-    margin: 0;
-    padding-block: clamp(28px, 6vw, 56px);
-    font-family: var(--serif);
-    font-size: clamp(1.35rem, 3.6vw, 2.2rem);
-    line-height: 1.2;
-    text-align: center;
-    text-wrap: balance;
-  }
-</style>
