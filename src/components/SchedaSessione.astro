@@ -43,8 +43,14 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
   /* Ingrandimento: col dito premuto (e col mouse sopra) il riquadro cresce
      e si appoggia sopra i video vicini. */
   .quadro.attivo { transform: scale(1.06); z-index: 2; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
+  /* Col mouse: i riquadri piccoli (tre colonne) si ingrandiscono di un terzo e vanno
+     sopra i vicini; quelli a tutta larghezza cambiano solo di poco. */
   @media (hover: hover) {
-    .quadro:hover { transform: scale(1.04); z-index: 2; box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
+    .quadro:hover { z-index: 3; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75); transform: scale(1.02); }
+  }
+  @media (hover: hover) and (min-width: 900px) {
+    .quadro:not(:first-child):hover { transform: scale(1.35); }
+    .quadro:last-child:nth-child(3n + 2):not(:first-child):hover { transform: scale(1.02); }
   }
   @media (prefers-reduced-motion: reduce) {
     .quadro, .quadro.attivo, .quadro:hover { transition: none; transform: none; }

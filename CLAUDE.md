@@ -77,13 +77,14 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 ## Grafica
 
 - Sito minimale, centrato sui video ("quadri"): la home contiene solo i video, senza spazi
-  tra i riquadri. Da telefono una colonna; da computer (≥ 900 px) la disposizione è in
-  `src/components/GrigliaSessioni.astro` (`data-layout`: due | tre | primo | ritmo | cinema;
-  predefinita "due"). Nell'anteprima si provano con `?layout=...` nell'indirizzo.
+  tra i riquadri. Da telefono una colonna. Da computer (≥ 900 px): l'ultima uscita a tutta
+  larghezza, poi le altre su tre colonne (`src/components/GrigliaSessioni.astro`).
+- Col mouse i riquadri piccoli si ingrandiscono davvero (scala 1.35, sopra i vicini),
+  crescendo verso l'interno della pagina (origine a sinistra/centro/destra secondo la colonna).
 - Tutti i riquadri hanno lo stesso formato 2,39:1 (`object-fit: cover`, ritaglio al centro).
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).
-  Nello stesso momento il riquadro si ingrandisce un po' (zoom) sopra i video vicini.
+  Su telefono, nello stesso momento, il riquadro si ingrandisce un po' sopra i vicini.
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
   del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
