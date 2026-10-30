@@ -11,7 +11,8 @@ const { sessioni } = Astro.props;
 
 <style>
   /* I video uno sotto l'altro, a tutta larghezza, senza spazi. */
-  .galleria { margin: 0; padding: 0; display: grid; gap: 0; }
+  .galleria { margin: 0; padding: 0; display: grid; gap: 0; overflow-x: clip; }
+  /* overflow-x: clip taglia l'ingrandimento ai lati, così la pagina non scorre in orizzontale. */
 </style>
 
 <script>

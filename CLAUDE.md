@@ -57,6 +57,7 @@ le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni
   a tutta larghezza, uno sotto l'altro, senza spazi. La home contiene solo i video.
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).
+  Nello stesso momento il riquadro si ingrandisce un po' (zoom) sopra i video vicini.
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
   del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
