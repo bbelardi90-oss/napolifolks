@@ -81,8 +81,9 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
   larghezza, poi le altre su tre colonne (`src/components/GrigliaSessioni.astro`).
 - Col mouse i riquadri piccoli si ingrandiscono davvero (scala 1.35, sopra i vicini),
   crescendo verso l'interno della pagina (origine a sinistra/centro/destra secondo la colonna).
-  La crescita è graduale (1,2 s) e resta animata anche con "Riduci movimento" attivo
-  nel sistema: scelta di Bruno.
+  La crescita è graduale (1,2 s), il ritorno dura 0,7 s; un riquadro nuovo cresce solo
+  quando il precedente è tornato normale (script in GrigliaSessioni.astro).
+  Resta animato anche con "Riduci movimento" attivo nel sistema: scelta di Bruno.
 - Tutti i riquadri hanno lo stesso formato 2,39:1 (`object-fit: cover`, ritaglio al centro).
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).

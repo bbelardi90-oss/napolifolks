@@ -38,6 +38,53 @@ const { sessioni } = Astro.props;
 </style>
 
 <script>
+  // Col mouse: un riquadro alla volta. Il nuovo cresce solo quando il precedente
+  // è tornato alla misura normale.
+  if (window.matchMedia('(hover: hover)').matches) {
+    const ATTESA = 80; // ms prima di crescere: passando veloce non si accendono tutti
+    const RITORNO = 700; // ms: deve corrispondere alla durata di chiusura nel CSS
+    let aperto: HTMLElement | null = null;
+    let inChiusura: HTMLElement | null = null;
+    let fineChiusura = 0;
+    let timer = 0;
+    let candidato: HTMLElement | null = null;
+
+    const chiudi = (q: HTMLElement) => {
+      q.classList.remove('aperto');
+      q.classList.add('chiusura');
+      inChiusura = q;
+      fineChiusura = performance.now() + RITORNO;
+      window.setTimeout(() => {
+        q.classList.remove('chiusura');
+        if (inChiusura === q) inChiusura = null;
+      }, RITORNO);
+      if (aperto === q) aperto = null;
+    };
+
+    const apri = (q: HTMLElement) => {
+      if (candidato !== q) return;
+      q.classList.remove('chiusura');
+      q.classList.add('aperto');
+      aperto = q;
+    };
+
+    document.querySelectorAll<HTMLElement>('.quadro').forEach((q) => {
+      q.addEventListener('mouseenter', () => {
+        candidato = q;
+        window.clearTimeout(timer);
+        if (aperto && aperto !== q) chiudi(aperto);
+        if (aperto === q) return;
+        const attesa = Math.max(ATTESA, fineChiusura - performance.now());
+        timer = window.setTimeout(() => apri(q), attesa);
+      });
+      q.addEventListener('mouseleave', () => {
+        if (candidato === q) candidato = null;
+        window.clearTimeout(timer);
+        if (aperto === q) chiudi(q);
+      });
+    });
+  }
+
   // Su telefono il titolo compare solo mentre il dito tocca il video
   // e sparisce quando il dito si alza.
   document.querySelectorAll('.quadro').forEach((q) => {
