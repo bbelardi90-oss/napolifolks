@@ -38,7 +38,20 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
   .quadro {
     list-style: none; position: relative; z-index: 0;
     container-type: inline-size; /* testi in proporzione alla larghezza del riquadro */
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    --durata: 0.75s;
+    --curva: cubic-bezier(0.22, 1, 0.36, 1); /* parte decisa, rallenta dolcemente alla fine */
+    /* Uscita: il riquadro torna piccolo con calma e scende sotto i vicini solo alla fine. */
+    transition:
+      transform var(--durata) var(--curva),
+      box-shadow var(--durata) var(--curva),
+      z-index 0s linear var(--durata);
+  }
+  /* Entrata: piccola attesa, così passando veloce sopra i video non si accendono tutti. */
+  .quadro:hover, .quadro.attivo {
+    transition:
+      transform var(--durata) var(--curva) 0.08s,
+      box-shadow var(--durata) var(--curva) 0.08s,
+      z-index 0s;
   }
   /* Ingrandimento: col dito premuto (e col mouse sopra) il riquadro cresce
      e si appoggia sopra i video vicini. */
@@ -63,7 +76,7 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     gap: 0.4em; padding: 0 var(--margine); text-align: center;
     background: rgba(8, 8, 7, 0.62);
-    opacity: 0; transition: opacity 0.35s ease;
+    opacity: 0; transition: opacity 0.5s ease;
   }
   .numero {
     font-family: var(--serif); line-height: 1;
