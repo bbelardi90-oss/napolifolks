@@ -31,7 +31,8 @@ Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti).
 Questo file e i commenti nel codice restano in italiano.
 Pagine: `/`, `/sessions/`, `/sessions/NN/`, `/artists/`, `/artists/<slug>/`, `/about/`,
 `/suggest/`, `/privacy/`. Nell'interfaccia i "gruppi" si chiamano "Artists".
-Ruoli in About: Art Director, Filmmaker, Sound Engineer.
+Ruoli in About: Art Director, Filmmaker, Sound Engineer (decisi con Bruno: non usare
+le diciture dei titoli di coda dei video né quelle di Instagram/YouTube).
 
 ## Tecnica
 
@@ -69,6 +70,7 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 
 - Sito minimale, centrato sui video ("quadri"): in home e in archivio i fotogrammi sono
   a tutta larghezza, uno sotto l'altro, senza spazi. La home contiene solo i video.
+- Tutti i riquadri hanno lo stesso formato 2,39:1 (`object-fit: cover`, ritaglio al centro).
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
   solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).
   Nello stesso momento il riquadro si ingrandisce un po' (zoom) sopra i video vicini.

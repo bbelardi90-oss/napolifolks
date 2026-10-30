@@ -49,7 +49,8 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     .quadro, .quadro.attivo, .quadro:hover { transition: none; transform: none; }
   }
   a { position: relative; display: block; text-decoration: none; color: var(--testo); }
-  img { display: block; width: 100%; height: auto; }
+  /* Tutti i riquadri hanno lo stesso formato: l'immagine viene ritagliata al centro. */
+  img { display: block; width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
   .velo {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
