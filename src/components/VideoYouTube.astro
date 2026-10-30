@@ -7,13 +7,13 @@ const { id, titolo } = Astro.props;
 const { larghezza, altezza } = dimensioniMiniatura(id);
 ---
 <div class="video" data-id={id} data-titolo={titolo}>
-  <button type="button" class="avvia" aria-label={`Riproduci: ${titolo}`}>
+  <button type="button" class="avvia" aria-label={`Play: ${titolo}`}>
     <img src={`/miniature/${id}.jpg`} alt="" width={larghezza} height={altezza} />
     <span class="play" aria-hidden="true"></span>
   </button>
   <p class="nota dettaglio">
-    Il video si carica da YouTube (youtube-nocookie.com) solo quando premi play.{" "}
-    <a href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">Guarda su YouTube</a>
+    The video loads from YouTube (youtube-nocookie.com) only when you press play.{" "}
+    <a href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">Watch on YouTube</a>
   </p>
 </div>
 

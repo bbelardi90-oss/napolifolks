@@ -2,10 +2,10 @@
 import { SITO } from '../config';
 
 const voci = [
-  { href: '/sessioni/', testo: 'Sessioni' },
-  { href: '/gruppi/', testo: 'Gruppi' },
-  { href: '/chi-siamo/', testo: 'Chi siamo' },
-  { href: '/proponi-un-gruppo/', testo: 'Proponi un gruppo' },
+  { href: '/sessions/', testo: 'Sessions' },
+  { href: '/artists/', testo: 'Artists' },
+  { href: '/about/', testo: 'About' },
+  { href: '/suggest/', testo: 'Suggest an artist' },
 ];
 const percorso = Astro.url.pathname;
 const attiva = (href: string) => percorso.startsWith(href);
@@ -15,7 +15,7 @@ const attiva = (href: string) => percorso.startsWith(href);
     <a class="marchio" href="/"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" /></a>
     <details class="menu">
       <summary aria-label="Menu"><span></span><span></span></summary>
-      <nav aria-label="Principale">
+      <nav aria-label="Main">
         <ul>
           {voci.map((v) => (
             <li><a href={v.href} aria-current={attiva(v.href) ? 'page' : undefined}>{v.testo}</a></li>

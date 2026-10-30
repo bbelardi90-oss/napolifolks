@@ -13,11 +13,11 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
 ---
 <li
   class="quadro"
-  data-gruppo={d.gruppo?.id ?? ''}
-  data-luogo={d.luogo?.id ?? ''}
-  data-anno={anno}
+  data-artist={d.gruppo?.id ?? ''}
+  data-location={d.luogo?.id ?? ''}
+  data-year={anno}
 >
-  <a href={`/sessioni/${sessione.id}/`}>
+  <a href={`/sessions/${sessione.id}/`}>
     <img
       src={`/miniature/${d.youtubeId}.jpg`}
       alt=""

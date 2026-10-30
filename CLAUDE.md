@@ -20,10 +20,18 @@ si inseriscono solo dopo la conferma di Bruno.
 - Napoli Folks registra gruppi folk in esterna.
 - Squadra (pagina "Chi siamo"): Marcello Squillante, direzione artistica; Luca Lanzano,
   filmmaker; Bruno Belardi, fonico. Bio e foto: da ricevere.
-- Instagram: pagina "napoli folks live" (URL esatto: da confermare).
-- YouTube: https://www.youtube.com/@NapoliFolksLive (ID canale `UCgBHZocloDLg_bqVOI0iddA`).
+- Instagram: https://www.instagram.com/napoli_folks_live/
+- YouTube: https://www.youtube.com/@napolifolkslive (ID canale `UCgBHZocloDLg_bqVOI0iddA`).
 - Email: napolifolks@gmail.com
 - Tutti i video e i materiali stanno su Instagram e YouTube.
+
+## Lingua
+
+Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti).
+Questo file e i commenti nel codice restano in italiano.
+Pagine: `/`, `/sessions/`, `/sessions/NN/`, `/artists/`, `/artists/<slug>/`, `/about/`,
+`/suggest/`, `/privacy/`. Nell'interfaccia i "gruppi" si chiamano "Artists".
+Ruoli in About: Art Director, Filmmaker, Sound Engineer.
 
 ## Tecnica
 
@@ -38,7 +46,7 @@ si inseriscono solo dopo la conferma di Bruno.
   così il sito non contatta Google prima del clic.
 - Font installati localmente con @fontsource: DM Serif Display (titoli e numeri) e DM Sans (menu, dettagli e testo).
 - Un solo colore d'accento: variabile `--accento` in `src/styles/global.css`.
-- Dati fissi del sito (email, link social) in `src/config.ts`.
+- Dati fissi del sito (email, link social) in `src/config.ts`. Icone social in `src/components/Icona.astro`.
 - Deve funzionare bene da telefono: verifica sempre a 360–400 px di larghezza.
 
 ## Importare i video

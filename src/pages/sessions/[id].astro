@@ -29,28 +29,28 @@ const durata = durataFormattata(d.durata);
     <VideoYouTube id={d.youtubeId} titolo={d.titolo} />
 
     <dl class="scheda-dati">
-      <div><dt class="dettaglio">Gruppo</dt>
-        <dd>{gruppo ? <a href={`/gruppi/${gruppo.id}/`}>{gruppo.data.nome}</a> : <Segnaposto>gruppo da definire</Segnaposto>}</dd></div>
-      <div><dt class="dettaglio">Luogo</dt>
-        <dd>{luogo ? luogo.data.nome : <Segnaposto>luogo da definire</Segnaposto>}</dd></div>
-      <div><dt class="dettaglio">Pubblicato</dt>
-        <dd>{data ?? <Segnaposto>data di pubblicazione</Segnaposto>}</dd></div>
-      <div><dt class="dettaglio">Durata</dt>
-        <dd>{durata ?? <Segnaposto>durata</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Artist</dt>
+        <dd>{gruppo ? <a href={`/artists/${gruppo.id}/`}>{gruppo.data.nome}</a> : <Segnaposto>artist to be confirmed</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Location</dt>
+        <dd>{luogo ? luogo.data.nome : <Segnaposto>location to be confirmed</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Published</dt>
+        <dd>{data ?? <Segnaposto>publication date</Segnaposto>}</dd></div>
+      <div><dt class="dettaglio">Duration</dt>
+        <dd>{durata ?? <Segnaposto>duration</Segnaposto>}</dd></div>
     </dl>
 
     <div class="testo descrizione">
       {d.descrizione
         ? d.descrizione.split(/\n{2,}/).map((p) => <p>{p}</p>)
-        : <Segnaposto blocco>descrizione dal video YouTube</Segnaposto>}
+        : <Segnaposto blocco>description from the YouTube video</Segnaposto>}
     </div>
 
-    <p><a class="pulsante" href={urlYouTube(d.youtubeId)} rel="noopener">Apri su YouTube</a></p>
+    <p><a class="pulsante" href={urlYouTube(d.youtubeId)} rel="noopener">Open on YouTube</a></p>
 
-    <nav class="vicine" aria-label="Altre sessioni">
-      {precedente ? <a href={`/sessioni/${precedente.id}/`}>← {numeroFormattato(precedente.data.numero)}</a> : <span></span>}
-      <a href="/sessioni/">Tutte le sessioni</a>
-      {successiva ? <a href={`/sessioni/${successiva.id}/`}>{numeroFormattato(successiva.data.numero)} →</a> : <span></span>}
+    <nav class="vicine" aria-label="More sessions">
+      {precedente ? <a href={`/sessions/${precedente.id}/`}>← {numeroFormattato(precedente.data.numero)}</a> : <span></span>}
+      <a href="/sessions/">All sessions</a>
+      {successiva ? <a href={`/sessions/${successiva.id}/`}>{numeroFormattato(successiva.data.numero)} →</a> : <span></span>}
     </nav>
   </article>
 </Base>

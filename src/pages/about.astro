@@ -1,22 +1,29 @@
 ---
 import Base from '../layouts/Base.astro';
 import Segnaposto from '../components/Segnaposto.astro';
+import Icona from '../components/Icona.astro';
 import { SITO } from '../config';
 
-// Squadra: nomi e ruoli forniti da Bruno. Bio e foto da ricevere.
+// Squadra: nomi forniti da Bruno, ruoli tradotti in inglese. Bio e foto da ricevere.
 // Per aggiungere una foto: metti il file in public/squadra/ e scrivi il percorso in `foto`.
 const squadra: { nome: string; ruolo: string; foto: string | null; bio: string | null }[] = [
-  { nome: 'Marcello Squillante', ruolo: 'Direzione artistica', foto: null, bio: null },
+  { nome: 'Marcello Squillante', ruolo: 'Art Director', foto: null, bio: null },
   { nome: 'Luca Lanzano', ruolo: 'Filmmaker', foto: null, bio: null },
-  { nome: 'Bruno Belardi', ruolo: 'Fonico', foto: null, bio: null },
+  { nome: 'Bruno Belardi', ruolo: 'Sound Engineer', foto: null, bio: null },
+];
+
+const link = [
+  { icona: 'instagram' as const, testo: 'Instagram', dettaglio: '@napoli_folks_live', url: SITO.instagram },
+  { icona: 'youtube' as const, testo: 'YouTube', dettaglio: '@napolifolkslive', url: SITO.youtube },
+  { icona: 'email' as const, testo: 'Email', dettaglio: SITO.email, url: `mailto:${SITO.email}` },
 ];
 ---
-<Base titolo="Chi siamo">
+<Base titolo="About">
   <section class="sezione contenitore">
-    <h1>Chi siamo</h1>
+    <h1>About</h1>
     <div class="testo">
-      <p>Napoli Folks registra gruppi folk in esterna.</p>
-      <Segnaposto blocco>descrizione del progetto</Segnaposto>
+      <p>Napoli Folks records folk groups outdoors.</p>
+      <Segnaposto blocco>project description</Segnaposto>
     </div>
 
     <ul class="squadra">
@@ -24,27 +31,28 @@ const squadra: { nome: string; ruolo: string; foto: string | null; bio: string |
         <li class="persona">
           {p.foto
             ? <img class="foto" src={p.foto} alt={p.nome} width="800" height="1000" loading="lazy" />
-            : <div class="foto vuota"><Segnaposto>foto di {p.nome}</Segnaposto></div>}
+            : <div class="foto vuota"><Segnaposto>photo of {p.nome}</Segnaposto></div>}
           <h2>{p.nome}</h2>
           <p class="ruolo dettaglio">{p.ruolo}</p>
           {p.bio
             ? <p class="bio">{p.bio}</p>
-            : <Segnaposto blocco>bio di {p.nome}</Segnaposto>}
+            : <Segnaposto blocco>bio of {p.nome}</Segnaposto>}
         </li>
       ))}
     </ul>
 
     <div class="testo">
-      <h2 class="titolo-contatti">Dove trovarci</h2>
-      <p>Tutti i video e i materiali stanno su Instagram e YouTube.</p>
+      <h2 class="titolo-contatti">Find us</h2>
+      <p>All our videos and materials are on Instagram and YouTube.</p>
       <ul class="contatti">
-        <li>
-          {SITO.instagram
-            ? <a href={SITO.instagram} rel="noopener">Instagram — napoli folks live</a>
-            : <>Instagram — napoli folks live <Segnaposto>link Instagram</Segnaposto></>}
-        </li>
-        <li><a href={SITO.youtube} rel="noopener">YouTube — Napoli Folks Live</a></li>
-        <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
+        {link.map((l) => (
+          <li>
+            <a href={l.url} rel="noopener">
+              <Icona nome={l.icona} />
+              <span><strong>{l.testo}</strong> <span class="dettaglio-link">{l.dettaglio}</span></span>
+            </a>
+          </li>
+        ))}
       </ul>
     </div>
   </section>
@@ -66,6 +74,9 @@ const squadra: { nome: string; ruolo: string; foto: string | null; bio: string |
   .ruolo { margin: 0 0 14px; color: var(--accento); }
   .bio { margin: 0; color: var(--testo-2); max-width: 32em; }
   .titolo-contatti { margin-top: 0; }
-  .contatti { padding-left: 1.1em; }
-  .contatti li { margin-bottom: 0.4em; }
+  .contatti { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .contatti a { display: inline-flex; align-items: center; gap: 14px; padding: 8px 0; text-decoration: none; }
+  .contatti strong { font-weight: 500; }
+  .dettaglio-link { color: var(--testo-2); margin-left: 6px; }
+  .contatti a:hover, .contatti a:hover .dettaglio-link { color: var(--accento); }
 </style>

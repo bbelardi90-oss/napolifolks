@@ -5,14 +5,14 @@ import Segnaposto from '../../components/Segnaposto.astro';
 
 const gruppi = (await getCollection('gruppi')).sort((a, b) => a.data.nome.localeCompare(b.data.nome, 'it'));
 ---
-<Base titolo="Gruppi">
+<Base titolo="Artists">
   <section class="sezione contenitore">
-    <h1>Gruppi</h1>
+    <h1>Artists</h1>
     {gruppi.length === 0
-      ? <Segnaposto blocco>gruppi: da inserire dopo la conferma di Bruno</Segnaposto>
+      ? <Segnaposto blocco>artists: to be added once confirmed by Bruno</Segnaposto>
       : (
         <ul class="elenco">
-          {gruppi.map((g) => <li><a href={`/gruppi/${g.id}/`}>{g.data.nome}</a></li>)}
+          {gruppi.map((g) => <li><a href={`/artists/${g.id}/`}>{g.data.nome}</a></li>)}
         </ul>
       )}
   </section>

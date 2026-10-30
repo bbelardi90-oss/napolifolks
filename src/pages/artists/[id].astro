@@ -20,7 +20,7 @@ const sessioni = (await tutteLeSessioni()).filter((s) => s.data.gruppo?.id === g
     <div class="testo">
       {gruppo.data.descrizione
         ? <p>{gruppo.data.descrizione}</p>
-        : <Segnaposto blocco>descrizione del gruppo</Segnaposto>}
+        : <Segnaposto blocco>artist description</Segnaposto>}
     </div>
     {gruppo.data.link.length > 0 && (
       <ul class="link">
@@ -29,7 +29,7 @@ const sessioni = (await tutteLeSessioni()).filter((s) => s.data.gruppo?.id === g
     )}
   </section>
   <section class="contenitore">
-    <h2>Sessioni</h2>
+    <h2>Sessions</h2>
     <GrigliaSessioni sessioni={sessioni} />
   </section>
 </Base>

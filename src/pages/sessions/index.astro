@@ -15,30 +15,30 @@ const anni = [...new Set(sessioni.map((s) => s.data.dataPubblicazione?.getFullYe
 const opzioniGruppi = gruppi.filter((g) => idGruppi.has(g.id)).map((g) => ({ v: g.id, t: g.data.nome }));
 const opzioniLuoghi = luoghi.filter((l) => idLuoghi.has(l.id)).map((l) => ({ v: l.id, t: l.data.nome }));
 const filtri = [
-  { nome: 'gruppo', etichetta: 'Gruppo', opzioni: opzioniGruppi },
-  { nome: 'luogo', etichetta: 'Luogo', opzioni: opzioniLuoghi },
-  { nome: 'anno', etichetta: 'Anno', opzioni: anni.map((a) => ({ v: String(a), t: String(a) })) },
+  { nome: 'artist', etichetta: 'Artist', opzioni: opzioniGruppi },
+  { nome: 'location', etichetta: 'Location', opzioni: opzioniLuoghi },
+  { nome: 'year', etichetta: 'Year', opzioni: anni.map((a) => ({ v: String(a), t: String(a) })) },
 ];
 ---
-<Base titolo="Sessioni">
+<Base titolo="Sessions">
   <section class="contenitore intestazione-archivio">
-    <h1>Sessioni</h1>
+    <h1>Sessions</h1>
 
-    <form class="filtri" aria-label="Filtra le sessioni">
+    <form class="filtri" aria-label="Filter sessions">
       {filtri.map((f) => (
         <label>
           <span class="dettaglio">{f.etichetta}</span>
           <select name={f.nome} disabled={f.opzioni.length === 0}>
-            <option value="">{f.opzioni.length ? 'Tutti' : 'Da definire'}</option>
+            <option value="">{f.opzioni.length ? 'All' : 'Not set yet'}</option>
             {f.opzioni.map((o) => <option value={o.v}>{o.t}</option>)}
           </select>
         </label>
       ))}
-      <p class="conteggio dettaglio" aria-live="polite"><span id="conteggio">{sessioni.length}</span> sessioni</p>
+      <p class="conteggio dettaglio" aria-live="polite"><span id="conteggio">{sessioni.length}</span> sessions</p>
     </form>
   </section>
   <GrigliaSessioni sessioni={sessioni} />
-  <p class="nessuna contenitore" hidden>Nessuna sessione con questi filtri.</p>
+  <p class="nessuna contenitore" hidden>No sessions match these filters.</p>
 </Base>
 
 <style>
@@ -68,7 +68,7 @@ const filtri = [
     const params = new URLSearchParams();
     let visibili = 0;
     for (const s of schede) {
-      const ok = ['gruppo', 'luogo', 'anno'].every((k) => {
+      const ok = ['artist', 'location', 'year'].every((k) => {
         const v = String(f.get(k) ?? '');
         return !v || s.dataset[k] === v;
       });

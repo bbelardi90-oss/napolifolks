@@ -39,7 +39,7 @@ export function durataFormattata(secondi: number | null): string | null {
 
 export function dataFormattata(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export function urlYouTube(id: string): string {

@@ -1,20 +1,17 @@
 ---
 import { SITO } from '../config';
-import Segnaposto from './Segnaposto.astro';
+import Icona from './Icona.astro';
 ---
 <footer class="piede">
   <div class="contenitore griglia">
     <p class="marchio"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" loading="lazy" /></p>
-    <ul class="contatti">
-      <li>
-        {SITO.instagram
-          ? <a href={SITO.instagram} rel="noopener">Instagram</a>
-          : <span>Instagram <Segnaposto>link Instagram</Segnaposto></span>}
-      </li>
-      <li><a href={SITO.youtube} rel="noopener">YouTube</a></li>
-      <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
+    <ul class="social">
+      <li><a href={SITO.instagram} rel="noopener" aria-label="Instagram"><Icona nome="instagram" /></a></li>
+      <li><a href={SITO.youtube} rel="noopener" aria-label="YouTube"><Icona nome="youtube" /></a></li>
+      <li><a href={`mailto:${SITO.email}`} aria-label={`Email: ${SITO.email}`}><Icona nome="email" /></a></li>
     </ul>
     <ul class="contatti">
+      <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
       <li><a href="/privacy/">Privacy</a></li>
     </ul>
   </div>
@@ -22,9 +19,16 @@ import Segnaposto from './Segnaposto.astro';
 
 <style>
   .piede { border-top: 1px solid var(--linea); padding: 40px 0 56px; margin-top: 0; }
-  .griglia { display: grid; gap: 20px; }
+  .griglia { display: grid; gap: 24px; }
   .marchio { margin: 0; line-height: 0; }
   .marchio img { height: 64px; width: auto; }
+  .social { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+  .social a {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    color: var(--testo); border: 1px solid var(--linea); border-radius: 50%;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .social a:hover { color: var(--accento); border-color: var(--accento); }
   .contatti {
     list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px;
     font-family: var(--sans); font-size: 0.85rem; color: var(--testo-2);
