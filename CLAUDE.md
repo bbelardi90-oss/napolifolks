@@ -31,11 +31,10 @@ si inseriscono solo dopo la conferma di Bruno.
   - `sessioni/NN.md`: un file per sessione (video). Titolo, ID, durata, data e descrizione
     vengono solo da YouTube; `gruppo` e `luogo` restano `null` finché Bruno non li conferma.
   - `gruppi/<slug>.md`: un file per gruppo, solo con dati forniti da Bruno.
-  - `luoghi.json`: elenco dei luoghi con `id`, `nome`, `lat`, `lng`.
+  - `luoghi.json`: elenco dei luoghi con `id` e `nome`.
 - Video YouTube: si caricano solo al clic, da `www.youtube-nocookie.com`
   (`src/components/VideoYouTube.astro`). Le miniature sono salvate in `public/miniature/`,
   così il sito non contatta Google prima del clic.
-- Mappa: Leaflet + tasselli OpenStreetMap (`src/components/Mappa.astro`).
 - Font installati localmente con @fontsource: EB Garamond (titoli in corsivo) e Inter (menu e dettagli).
 - Un solo colore d'accento: variabile `--accento` in `src/styles/global.css`.
 - Dati fissi del sito (email, link social) in `src/config.ts`.
@@ -47,6 +46,18 @@ si inseriscono solo dopo la conferma di Bruno.
 - completa `dataPubblicazione` e `descrizione` dove sono ancora `null`;
 - crea una bozza per ogni video nuovo, con gruppo e luogo da definire.
 Il feed contiene solo gli ultimi 15 video; la durata non è nel feed e va completata a parte.
+
+Miniature: lo script scarica quelle grandi in `.miniature-originali/`; poi
+`python3 scripts/ritaglia-miniature.py .miniature-originali` toglie le bande nere,
+le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni).
+
+## Grafica
+
+- I video sono "quadri": in home e in archivio uno per riga, grandi, con molto spazio
+  intorno e una didascalia sotto (numero, titolo, gruppo, luogo, durata).
+- Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
+  (ritagliato e reso trasparente). Va sostituito con il file originale.
+- La mappa è stata tolta su richiesta di Bruno.
 
 ## Lavoro
 

@@ -1,17 +1,19 @@
 // Importa i video del canale YouTube "Napoli Folks Live" dal feed RSS pubblico.
 // - Completa dataPubblicazione e descrizione delle sessioni dove sono ancora null.
 // - Crea una bozza per ogni video nuovo (gruppo e luogo restano null: da definire con Bruno).
-// - Scarica la miniatura in public/miniature/ se manca.
+// - Scarica la miniatura grande (1280x720) dei video nuovi in .miniature-originali/;
+//   poi va ritagliata con: python3 scripts/ritaglia-miniature.py .miniature-originali
 // Non tocca mai campi già compilati.
 // Uso: npm run importa-youtube
 
-import { readdir, readFile, writeFile, access } from 'node:fs/promises';
+import { readdir, readFile, writeFile, access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const CANALE = 'UCgBHZocloDLg_bqVOI0iddA';
 const FEED = `https://www.youtube.com/feeds/videos.xml?channel_id=${CANALE}`;
 const DIR_SESSIONI = 'src/content/sessioni';
 const DIR_MINIATURE = 'public/miniature';
+const DIR_ORIGINALI = '.miniature-originali';
 
 const decodifica = (s) =>
   s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
@@ -19,6 +21,7 @@ const tag = (xml, nome) => {
   const m = xml.match(new RegExp(`<${nome}[^>]*>([\\s\\S]*?)</${nome}>`));
   return m ? decodifica(m[1].trim()) : null;
 };
+let nuoveMiniature = 0;
 const esiste = (p) => access(p).then(() => true, () => false);
 
 const risposta = await fetch(FEED);
@@ -81,12 +84,17 @@ bozza: true
     console.log(`Nuova bozza: ${nomeFile} — ${v.titolo}`);
   }
 
-  const miniatura = path.join(DIR_MINIATURE, `${v.id}.jpg`);
-  if (!(await esiste(miniatura))) {
-    const r = await fetch(`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`);
+  if (!(await esiste(path.join(DIR_MINIATURE, `${v.id}.jpg`)))) {
+    const r = await fetch(`https://i.ytimg.com/vi/${v.id}/maxresdefault.jpg`);
     if (r.ok) {
-      await writeFile(miniatura, Buffer.from(await r.arrayBuffer()));
+      await mkdir(DIR_ORIGINALI, { recursive: true });
+      await writeFile(path.join(DIR_ORIGINALI, `${v.id}.max.jpg`), Buffer.from(await r.arrayBuffer()));
+      nuoveMiniature++;
       console.log(`Miniatura scaricata: ${v.id}`);
     }
   }
+}
+
+if (nuoveMiniature) {
+  console.log(`\nOra ritaglia le miniature: python3 scripts/ritaglia-miniature.py ${DIR_ORIGINALI}`);
 }

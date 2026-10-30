@@ -36,8 +36,6 @@ const luoghi = defineCollection({
   schema: z.object({
     id: z.string(),
     nome: z.string(),
-    lat: z.number(),
-    lng: z.number(),
   }),
 });
 

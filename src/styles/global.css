@@ -15,7 +15,7 @@
   --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
   --sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --larghezza: 1200px;
+  --larghezza: 1320px;
   --margine: clamp(16px, 4vw, 40px);
   color-scheme: dark;
 }

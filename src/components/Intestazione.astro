@@ -4,7 +4,6 @@ import { SITO } from '../config';
 const voci = [
   { href: '/sessioni/', testo: 'Sessioni' },
   { href: '/gruppi/', testo: 'Gruppi' },
-  { href: '/mappa/', testo: 'Mappa' },
   { href: '/chi-siamo/', testo: 'Chi siamo' },
   { href: '/proponi-un-gruppo/', testo: 'Proponi un gruppo' },
 ];
@@ -13,7 +12,7 @@ const attiva = (href: string) => percorso.startsWith(href);
 ---
 <header class="intestazione">
   <div class="barra contenitore">
-    <a class="marchio" href="/">{SITO.nome}</a>
+    <a class="marchio" href="/"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" /></a>
     <details class="menu">
       <summary aria-label="Menu"><span></span><span></span></summary>
       <nav aria-label="Principale">
@@ -35,10 +34,8 @@ const attiva = (href: string) => percorso.startsWith(href);
     border-bottom: 1px solid var(--linea);
   }
   .barra { display: flex; align-items: center; justify-content: space-between; min-height: 60px; }
-  .marchio {
-    font-family: var(--serif); font-style: italic; font-size: 1.45rem;
-    text-decoration: none;
-  }
+  .marchio { display: block; line-height: 0; }
+  .marchio img { height: 40px; width: auto; }
   .menu summary {
     list-style: none; cursor: pointer; width: 44px; height: 44px;
     display: flex; flex-direction: column; justify-content: center; gap: 7px; align-items: flex-end;

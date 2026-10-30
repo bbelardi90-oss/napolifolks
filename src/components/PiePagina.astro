@@ -4,7 +4,7 @@ import Segnaposto from './Segnaposto.astro';
 ---
 <footer class="piede">
   <div class="contenitore griglia">
-    <p class="marchio">{SITO.nome}</p>
+    <p class="marchio"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" loading="lazy" /></p>
     <ul class="contatti">
       <li>
         {SITO.instagram
@@ -23,7 +23,8 @@ import Segnaposto from './Segnaposto.astro';
 <style>
   .piede { border-top: 1px solid var(--linea); padding: 40px 0 56px; margin-top: 40px; }
   .griglia { display: grid; gap: 20px; }
-  .marchio { font-style: italic; font-size: 1.5rem; margin: 0; }
+  .marchio { margin: 0; line-height: 0; }
+  .marchio img { height: 64px; width: auto; }
   .contatti {
     list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px;
     font-family: var(--sans); font-size: 0.85rem; color: var(--testo-2);

@@ -1,4 +1,11 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import miniature from '../data/miniature.json';
+
+// Dimensioni delle miniature ritagliate (scripts/ritaglia-miniature.py).
+export function dimensioniMiniatura(youtubeId: string): { larghezza: number; altezza: number } {
+  return (miniature as Record<string, { larghezza: number; altezza: number }>)[youtubeId]
+    ?? { larghezza: 1280, altezza: 720 };
+}
 
 export type Sessione = CollectionEntry<'sessioni'>;
 
