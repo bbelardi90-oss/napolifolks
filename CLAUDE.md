@@ -35,7 +35,7 @@ si inseriscono solo dopo la conferma di Bruno.
 - Video YouTube: si caricano solo al clic, da `www.youtube-nocookie.com`
   (`src/components/VideoYouTube.astro`). Le miniature sono salvate in `public/miniature/`,
   così il sito non contatta Google prima del clic.
-- Font installati localmente con @fontsource: EB Garamond (titoli in corsivo) e Inter (menu e dettagli).
+- Font installati localmente con @fontsource: DM Serif Display (titoli e numeri) e DM Sans (menu, dettagli e testo).
 - Un solo colore d'accento: variabile `--accento` in `src/styles/global.css`.
 - Dati fissi del sito (email, link social) in `src/config.ts`.
 - Deve funzionare bene da telefono: verifica sempre a 360–400 px di larghezza.
@@ -56,7 +56,7 @@ le salva in `public/miniature/` e aggiorna `src/data/miniature.json` (dimensioni
 - Sito minimale, centrato sui video ("quadri"): in home e in archivio i fotogrammi sono
   a tutta larghezza, uno sotto l'altro, senza spazi. La home contiene solo i video.
 - Il titolo compare sopra il video scurendolo: al passaggio del mouse, e su telefono
-  sul video che sta al centro dello schermo mentre si scorre.
+  solo mentre il dito tocca il video (nessuna comparsa automatica scorrendo).
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
   del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.

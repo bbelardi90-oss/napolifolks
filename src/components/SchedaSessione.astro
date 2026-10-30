@@ -46,13 +46,16 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     opacity: 0; transition: opacity 0.35s ease;
   }
   .numero {
-    font-family: var(--serif); font-style: italic; line-height: 1;
+    font-family: var(--serif); line-height: 1;
     font-size: clamp(2rem, 6vw, 4.5rem); color: var(--accento);
   }
   .titolo {
-    font-family: var(--serif); font-style: italic; line-height: 1.2;
+    font-family: var(--serif); line-height: 1.15;
     font-size: clamp(1.15rem, 3vw, 2.4rem); max-width: 26em;
   }
-  a:hover .velo, a:focus-visible .velo, .quadro.attivo .velo { opacity: 1; }
+  /* Il titolo compare: col mouse sopra (solo dove c'è un mouse),
+     con la tastiera, e su telefono mentre il dito tocca il video. */
+  @media (hover: hover) { a:hover .velo { opacity: 1; } }
+  a:focus-visible .velo, .quadro.attivo .velo { opacity: 1; }
   a:focus-visible { outline-offset: -3px; }
 </style>

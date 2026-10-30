@@ -15,22 +15,12 @@ const { sessioni } = Astro.props;
 </style>
 
 <script>
-  // Su telefono (niente mouse) il titolo compare sul video che passa
-  // al centro dello schermo mentre si scorre.
-  if (window.matchMedia('(hover: none)').matches) {
-    let attivo: Element | null = null;
-    let inAttesa = false;
-    const aggiorna = () => {
-      inAttesa = false;
-      const sotto = document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest('.quadro') ?? null;
-      if (sotto === attivo) return;
-      attivo?.classList.remove('attivo');
-      sotto?.classList.add('attivo');
-      attivo = sotto;
-    };
-    const pianifica = () => { if (!inAttesa) { inAttesa = true; requestAnimationFrame(aggiorna); } };
-    addEventListener('scroll', pianifica, { passive: true });
-    addEventListener('resize', pianifica);
-    pianifica();
-  }
+  // Su telefono il titolo compare solo mentre il dito tocca il video
+  // e sparisce quando il dito si alza.
+  document.querySelectorAll('.quadro').forEach((q) => {
+    q.addEventListener('touchstart', () => q.classList.add('attivo'), { passive: true });
+    const spegni = () => q.classList.remove('attivo');
+    q.addEventListener('touchend', spegni);
+    q.addEventListener('touchcancel', spegni);
+  });
 </script>
