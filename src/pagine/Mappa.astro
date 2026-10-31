@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import MappaProvenienze from '../components/MappaProvenienze.astro';
+import provenienze from '../data/provenienze.json';
+import { type Lingua } from '../i18n';
+
+interface Props { l: Lingua }
+const { l } = Astro.props;
+
+const citta = provenienze.origini.map((o) => o.citta[l]);
+const elenco = (v: string[], e: string) => v.length < 2 ? v.join('') : `${v.slice(0, -1).join(', ')} ${e} ${v[v.length - 1]}`;
+const testi = {
+  en: {
+    titolo: 'Map',
+    descrizione: `Map with arrows from ${elenco(citta, 'and')} to ${provenienze.napoli.nome.en}.`,
+  },
+  it: {
+    titolo: 'Mappa',
+    descrizione: `Mappa con le frecce da ${elenco(citta, 'e')} fino a ${provenienze.napoli.nome.it}.`,
+  },
+}[l];
+---
+<Base titolo={testi.titolo}>
+  <section class="sezione contenitore">
+    <h1>{testi.titolo}</h1>
+    <MappaProvenienze l={l} descrizione={testi.descrizione} />
+  </section>
+</Base>

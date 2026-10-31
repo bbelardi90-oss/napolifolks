@@ -36,7 +36,7 @@ sempre l'inglese. C'è la **traduzione italiana** sotto `/it/`, con gli stessi i
 (`/it/about/`, `/it/sessions/NN/`…). Nella barra in alto una bandierina porta alla stessa pagina
 nell'altra lingua (bandiera italiana sul sito inglese, britannica su quello italiano).
 Questo file e i commenti nel codice restano in italiano.
-Pagine: `/` (tutti i video), `/sessions/NN/`, `/about/`, `/suggest/`, `/privacy/`.
+Pagine: `/` (tutti i video), `/sessions/NN/`, `/map/`, `/about/`, `/suggest/`, `/privacy/`.
 Come è fatto: le pagine vere stanno in `src/pagine/` e ricevono la lingua `l`; i file in
 `src/pages/` (inglese) e `src/pages/it/` (italiano) le pubblicano. Testi comuni (menu, pulsanti)
 in `src/i18n.ts`; testi di una sola pagina in cima al suo file in `src/pagine/`.
@@ -104,7 +104,11 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
 - Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
   (ritagliato e reso trasparente). Va sostituito con il file originale.
-- La mappa è stata tolta su richiesta di Bruno.
+- Mappa (`/map/`, voce "Map"/"Mappa" nel menu): frecce dalle città di provenienza degli artisti
+  fino a Napoli. Solo gli artisti internazionali (scelta di Bruno). Dati in `src/data/provenienze.json`
+  (solo provenienze confermate da Bruno); disegno in `src/components/MappaProvenienze.astro`,
+  SVG statico generato in build con d3-geo e i confini Natural Earth (`world-atlas`): niente servizi esterni.
+  Per ogni città: `etichetta` (sopra/sotto) e `allinea` (inizio/fine) per tenere la scritta dentro lo schermo.
 
 ## Lavoro
 

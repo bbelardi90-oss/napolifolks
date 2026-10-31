@@ -1,0 +1,53 @@
+{
+  "napoli": {
+    "nome": {
+      "en": "Naples",
+      "it": "Napoli"
+    },
+    "coordinate": [
+      14.2681,
+      40.8518
+    ]
+  },
+  "origini": [
+    {
+      "sessione": "02",
+      "citta": {
+        "en": "Caracas",
+        "it": "Caracas"
+      },
+      "coordinate": [
+        -66.9036,
+        10.4806
+      ],
+      "etichetta": "sotto",
+      "allinea": "inizio"
+    },
+    {
+      "sessione": "05",
+      "citta": {
+        "en": "Buenos Aires",
+        "it": "Buenos Aires"
+      },
+      "coordinate": [
+        -58.3816,
+        -34.6037
+      ],
+      "etichetta": "sotto",
+      "allinea": "inizio"
+    },
+    {
+      "sessione": "08",
+      "citta": {
+        "en": "Gaza",
+        "it": "Gaza"
+      },
+      "coordinate": [
+        34.4668,
+        31.5017
+      ],
+      "etichetta": "sotto",
+      "allinea": "fine"
+    }
+  ]
+}

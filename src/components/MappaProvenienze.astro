@@ -1,0 +1,159 @@
+---
+// Mappa con le frecce dalle città di provenienza degli artisti fino a Napoli.
+// Disegnata in fase di build (d3-geo + confini Natural Earth da world-atlas): la pagina
+// pubblicata è un SVG statico e non contatta nessun servizio esterno.
+// Le provenienze stanno in src/data/provenienze.json (solo quelle confermate da Bruno).
+import { geoNaturalEarth1, geoPath, geoInterpolate } from 'd3-geo';
+import { feature, mesh } from 'topojson-client';
+import mondo from 'world-atlas/countries-50m.json';
+import provenienze from '../data/provenienze.json';
+import { getEntry } from 'astro:content';
+import { percorso, type Lingua } from '../i18n';
+import { titoloBreve, numeroFormattato } from '../lib/sessioni';
+
+interface Props { l: Lingua; descrizione: string }
+const { l, descrizione } = Astro.props;
+
+type Punto = [number, number];
+const napoli = provenienze.napoli.coordinate as Punto;
+const origini = provenienze.origini.map((o) => ({ ...o, coordinate: o.coordinate as Punto }));
+
+// Riquadro: tutte le città più un margine (in unità SVG; spazio per le etichette).
+const W = 1000;
+const margine = { sinistra: 70, destra: 70, sopra: 70, sotto: 110 };
+const punti = { type: 'MultiPoint', coordinates: [napoli, ...origini.map((o) => o.coordinate)] } as const;
+const proiezione = geoNaturalEarth1().fitWidth(W - margine.sinistra - margine.destra, punti as any);
+const [[, y0], [, y1]] = geoPath(proiezione).bounds(punti as any);
+const H = Math.round(y1 - y0 + margine.sopra + margine.sotto);
+proiezione.fitExtent(
+  [[margine.sinistra, margine.sopra], [W - margine.destra, H - margine.sotto]],
+  punti as any,
+);
+proiezione.clipExtent([[0, 0], [W, H]]);
+const disegna = geoPath(proiezione).digits(1);
+
+const oggetti = (mondo as any).objects;
+const terre = disegna(feature(mondo as any, oggetti.land) as any) ?? '';
+const confini = disegna(mesh(mondo as any, oggetti.countries, (a: any, b: any) => a !== b) as any) ?? '';
+
+const xy = (p: Punto) => proiezione(p) as [number, number];
+const [nx, ny] = xy(napoli);
+
+// Ogni freccia segue l'arco più breve sul globo (cerchio massimo), e si ferma
+// poco prima del punto di Napoli. La punta è un triangolo orientato sull'ultimo tratto.
+const frecce = await Promise.all(origini.map(async (o, i) => {
+  const interpola = geoInterpolate(o.coordinate, napoli);
+  const passi = 64;
+  const tratto: [number, number][] = [];
+  for (let k = 0; k <= passi; k++) tratto.push(xy(interpola(k / passi) as Punto));
+  // Accorcia la fine per lasciare visibile il punto di Napoli.
+  const stacco = 14;
+  let fine = tratto.length - 1;
+  while (fine > 1 && Math.hypot(tratto[fine][0] - nx, tratto[fine][1] - ny) < stacco) fine--;
+  const linea = tratto.slice(0, fine + 1);
+  const [ax, ay] = linea[linea.length - 2];
+  const [bx, by] = linea[linea.length - 1];
+  const angolo = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI;
+  const d = linea.map(([x, y], k) => `${k ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+
+  const sessione = await getEntry('sessioni', o.sessione);
+  const titolo = sessione ? titoloBreve(sessione.data.titolo) : '';
+  const artista = titolo.split(' – ')[0];
+  const [ox, oy] = xy(o.coordinate);
+  return {
+    d, punta: { x: bx, y: by, angolo }, ritardo: i * 0.6,
+    origine: { x: ox, y: oy },
+    citta: o.citta[l as Lingua], artista,
+    numero: sessione ? numeroFormattato(sessione.data.numero) : '',
+    href: percorso(l, `/sessions/${o.sessione}/`),
+    etichetta: o.etichetta, allinea: o.allinea,
+  };
+}));
+
+// Posizione delle etichette HTML in percentuale, così restano leggibili a ogni larghezza.
+const pct = (x: number, y: number) => `left:${((x / W) * 100).toFixed(2)}%;top:${((y / H) * 100).toFixed(2)}%`;
+---
+<figure class="mappa" style={`aspect-ratio:${W}/${H}`}>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descrizione}>
+    <path class="terra" d={terre} />
+    <path class="confini" d={confini} />
+    {frecce.map((f) => (
+      <g class="freccia" style={`--ritardo:${f.ritardo}s`}>
+        <path class="arco" d={f.d} pathLength="1" />
+        <path class="punta" d="M0 0 L-16 -7 L-16 7 Z" transform={`translate(${f.punta.x.toFixed(1)} ${f.punta.y.toFixed(1)}) rotate(${f.punta.angolo.toFixed(1)})`} />
+        <circle class="origine" cx={f.origine.x.toFixed(1)} cy={f.origine.y.toFixed(1)} r="6" />
+      </g>
+    ))}
+    <circle class="napoli-alone" cx={nx.toFixed(1)} cy={ny.toFixed(1)} r="18" />
+    <circle class="napoli" cx={nx.toFixed(1)} cy={ny.toFixed(1)} r="8" />
+  </svg>
+
+  {frecce.map((f) => (
+    <a class:list={['etichetta', f.etichetta, f.allinea]} href={f.href} style={pct(f.origine.x, f.origine.y)}>
+      <span class="citta">{f.citta}</span>
+      <span class="artista">{f.numero} {f.artista}</span>
+    </a>
+  ))}
+  <span class="etichetta sopra napoli-nome" style={pct(nx, ny)}>
+    <span class="citta">{provenienze.napoli.nome[l as Lingua]}</span>
+  </span>
+</figure>
+
+<style>
+  .mappa { position: relative; margin: 0; width: 100%; }
+  svg { display: block; width: 100%; height: 100%; }
+  /* Bordi sfumati: la mappa si perde nel fondo invece di finire con un rettangolo. */
+  svg {
+    --sfuma: 7%;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent),
+      linear-gradient(to bottom, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent),
+      linear-gradient(to bottom, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent);
+    mask-composite: intersect;
+  }
+  .terra { fill: var(--fondo-2); }
+  .confini { fill: none; stroke: var(--linea); stroke-width: 0.8; }
+
+  .arco {
+    fill: none; stroke: var(--accento); stroke-width: 2.5; stroke-linecap: round;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+    animation: traccia 2.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+    animation-delay: var(--ritardo);
+  }
+  .punta, .origine {
+    fill: var(--accento); opacity: 0;
+    animation: compari 0.4s ease forwards;
+  }
+  .origine { animation-delay: var(--ritardo); }
+  .punta { animation-delay: calc(var(--ritardo) + 2s); }
+  .napoli { fill: var(--testo); }
+  .napoli-alone { fill: none; stroke: var(--testo); stroke-width: 1.5; opacity: 0.35; }
+
+  @keyframes traccia { to { stroke-dashoffset: 0; } }
+  @keyframes compari { to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .arco { animation: none; stroke-dashoffset: 0; }
+    .punta, .origine { animation: none; opacity: 1; }
+  }
+
+  /* Etichette: centrate sul punto, sopra o sotto. */
+  .etichetta {
+    position: absolute; transform: translate(-50%, 12px);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    text-decoration: none; line-height: 1.15; white-space: nowrap;
+    /* Ombra del colore di fondo: le scritte restano leggibili sopra le frecce. */
+    text-shadow: 0 0 4px var(--fondo), 0 0 8px var(--fondo), 0 0 12px var(--fondo);
+  }
+  .etichetta.sopra { transform: translate(-50%, calc(-100% - 12px)); }
+  /* Vicino ai bordi l'etichetta parte dal punto (inizio) o finisce sul punto (fine). */
+  .etichetta.inizio { transform: translate(-10px, 12px); align-items: flex-start; text-align: left; }
+  .etichetta.fine { transform: translate(calc(-100% + 10px), 12px); align-items: flex-end; text-align: right; }
+  .citta {
+    font-family: var(--sans); font-size: clamp(0.62rem, 1.6vw, 0.78rem);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--testo-2);
+  }
+  .artista { font-family: var(--serif); font-size: clamp(0.85rem, 2.4vw, 1.25rem); color: var(--testo); }
+  a.etichetta:hover .artista, a.etichetta:focus-visible .artista { color: var(--accento); }
+  .napoli-nome .citta { color: var(--testo); }
+</style>
