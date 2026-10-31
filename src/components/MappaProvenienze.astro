@@ -1,0 +1,477 @@
+---
+// Mappa con le linee tratteggiate dalle città di provenienza degli artisti fino a Napoli.
+// Disegnata in fase di build (d3-geo + confini Natural Earth da world-atlas): la pagina
+// pubblicata è un SVG statico e non contatta nessun servizio esterno.
+// Zoom: rotellina, pizzico, doppio clic, pulsanti +/−; si sposta trascinando.
+// Clic su una città: piccolo pop-up con miniatura e link al video.
+// Le provenienze stanno in src/data/provenienze.json (solo quelle confermate da Bruno).
+import { geoNaturalEarth1, geoPath, geoInterpolate } from 'd3-geo';
+import { feature, mesh } from 'topojson-client';
+import { presimplify, simplify, quantile } from 'topojson-simplify';
+import mondo50 from 'world-atlas/countries-50m.json';
+import provenienze from '../data/provenienze.json';
+import { getEntry } from 'astro:content';
+import { percorso, type Lingua } from '../i18n';
+import TitoloSessione from './TitoloSessione.astro';
+import { numeroFormattato, dimensioniMiniatura } from '../lib/sessioni';
+
+interface Props { l: Lingua; descrizione: string }
+const { l, descrizione } = Astro.props;
+
+const testi = {
+  en: { guarda: 'Watch the video', chiudi: 'Close', piu: 'Zoom in', meno: 'Zoom out', tutta: 'Back to the start view', aiuto: 'Zoom and drag the map. Tap a city to see its video.' },
+  it: { guarda: 'Guarda il video', chiudi: 'Chiudi', piu: 'Ingrandisci', meno: 'Riduci', tutta: 'Torna alla vista iniziale', aiuto: 'Ingrandisci e trascina la mappa. Tocca una città per vedere il suo video.' },
+}[l];
+
+type Punto = [number, number];
+const napoli = provenienze.napoli.coordinate as Punto;
+const origini = provenienze.origini.map((o) => ({ ...o, coordinate: o.coordinate as Punto }));
+
+// Riquadro: tutte le città più un margine (in unità SVG).
+const W = 1000;
+const margine = { sinistra: 70, destra: 70, sopra: 70, sotto: 90 };
+const punti = { type: 'MultiPoint', coordinates: [napoli, ...origini.map((o) => o.coordinate)] } as const;
+const proiezione = geoNaturalEarth1().fitWidth(W - margine.sinistra - margine.destra, punti as any);
+const [[, y0], [, y1]] = geoPath(proiezione).bounds(punti as any);
+const H = Math.round(y1 - y0 + margine.sopra + margine.sotto);
+proiezione.fitExtent(
+  [[margine.sinistra, margine.sopra], [W - margine.destra, H - margine.sotto]],
+  punti as any,
+);
+// Si disegna tutto il mondo: all'apertura la vista è inquadrata sulle città,
+// ma si può rimpicciolire fino al mondo intero e spostarsi ovunque.
+const disegna = geoPath(proiezione).digits(1);
+const sfera = disegna({ type: 'Sphere' } as any) ?? '';
+const [[mx0, my0], [mx1, my1]] = geoPath(proiezione).bounds({ type: 'Sphere' } as any);
+const mondoLimiti = [mx0, my0, mx1, my1].map((n) => n.toFixed(1)).join(' ');
+
+// Confini semplificati: tutto il mondo in circa 100 KB compressi (senza, quasi 1 MB).
+const pre = presimplify(structuredClone(mondo50) as any);
+const mondo = simplify(pre, quantile(pre, 0.25));
+const oggetti = (mondo as any).objects;
+const terre = disegna(feature(mondo as any, oggetti.land) as any) ?? '';
+const confini = disegna(mesh(mondo as any, oggetti.countries, (a: any, b: any) => a !== b) as any) ?? '';
+
+const xy = (p: Punto) => proiezione(p) as [number, number];
+const [nx, ny] = xy(napoli);
+const f1 = (n: number) => n.toFixed(1);
+
+// Ogni freccia segue l'arco più breve sul globo (cerchio massimo) fino al centro di Napoli.
+const frecce = await Promise.all(origini.map(async (o, i) => {
+  const interpola = geoInterpolate(o.coordinate, napoli);
+  const passi = 64;
+  const tratto: [number, number][] = [];
+  for (let k = 0; k <= passi; k++) tratto.push(xy(interpola(k / passi) as Punto));
+  const d = tratto.map(([x, y], k) => `${k ? 'L' : 'M'}${f1(x)} ${f1(y)}`).join('');
+
+  const sessione = await getEntry('sessioni', o.sessione);
+  if (!sessione) throw new Error(`provenienze.json: sessione ${o.sessione} non trovata`);
+  const s = sessione.data;
+  const [ox, oy] = xy(o.coordinate);
+  return {
+    id: `luogo-${o.sessione}`, d, ritardo: -i * 0.4,
+    x: ox, y: oy,
+    citta: o.citta[l], allinea: o.allinea,
+    numero: numeroFormattato(s.numero), titolo: s.titolo,
+    miniatura: `/miniature/${s.youtubeId}.jpg`, ...dimensioniMiniatura(s.youtubeId),
+    href: percorso(l, `/sessions/${o.sessione}/`),
+  };
+}));
+---
+<figure class="mappa" data-w={W} data-h={H} data-mondo={mondoLimiti} style={`--rapporto:${(W / H).toFixed(4)}`}>
+  <div class="vista" style={`aspect-ratio:${W}/${H}`} tabindex="0" aria-label={testi.aiuto}>
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descrizione}>
+      <g class="piano">
+        <path class="mare" d={sfera} />
+        <path class="terra" d={terre} />
+        <path class="confini" d={confini} vector-effect="non-scaling-stroke" />
+        {frecce.map((f) => (
+          <g class="via" data-via={f.id}>
+            <!-- La maschera "disegna" la linea dalla città verso Napoli quando si apre. -->
+            <mask id={`maschera-${f.id}`} maskUnits="userSpaceOnUse" x="-5000" y="-5000" width="20000" height="20000">
+              <path class="rivela" d={f.d} pathLength="1" />
+            </mask>
+            <path class="arco" d={f.d} vector-effect="non-scaling-stroke" mask={`url(#maschera-${f.id})`} style={`animation-delay:${f.ritardo}s`} />
+          </g>
+        ))}
+      </g>
+    </svg>
+
+    <!-- Segni sopra la mappa: lo script li riposiziona a ogni zoom o spostamento. -->
+    <span class="segno napoli" data-x={f1(nx)} data-y={f1(ny)}>
+      <span class="punto"></span>
+      <span class="nome">{provenienze.napoli.nome[l]}</span>
+    </span>
+    {frecce.map((f) => (
+      <button
+        type="button" class:list={['segno', 'luogo', f.allinea]}
+        data-x={f1(f.x)} data-y={f1(f.y)}
+        aria-expanded="false" aria-controls={f.id}
+      >
+        <span class="punto"></span>
+        <span class="nome">{f.citta}</span>
+      </button>
+    ))}
+    {frecce.map((f) => (
+      <div class="popup" id={f.id} data-x={f1(f.x)} data-y={f1(f.y)} role="dialog" aria-label={f.citta} hidden>
+        <button type="button" class="chiudi" aria-label={testi.chiudi}>×</button>
+        <a href={f.href}>
+          <img src={f.miniatura} alt="" width={f.larghezza} height={f.altezza} loading="lazy" decoding="async" />
+          <span class="citta">{f.citta}</span>
+          <span class="titolo"><TitoloSessione titolo={f.titolo} prima={f.numero} /></span>
+          <span class="guarda">{testi.guarda} →</span>
+        </a>
+      </div>
+    ))}
+
+    <div class="comandi">
+      <button type="button" data-zoom="in" aria-label={testi.piu} title={testi.piu}>+</button>
+      <button type="button" data-zoom="out" aria-label={testi.meno} title={testi.meno}>−</button>
+      <button type="button" data-zoom="reset" aria-label={testi.tutta} title={testi.tutta}>⤢</button>
+    </div>
+  </div>
+  <figcaption class="dettaglio">{testi.aiuto}</figcaption>
+</figure>
+
+<style>
+  /* Mai più alta dell'80% dello schermo: pulsanti e mappa intera sempre a vista. */
+  .mappa { margin: 0 auto; width: 100%; max-width: calc(80svh * var(--rapporto)); }
+  .vista {
+    position: relative; width: 100%; overflow: hidden;
+    touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
+    /* Fuori dal globo (si vede rimpicciolendo): un tono più scuro del mare. */
+    background: color-mix(in srgb, var(--fondo) 60%, #000); border: 1px solid var(--linea);
+  }
+  .vista.trascina { cursor: grabbing; }
+  svg { display: block; width: 100%; height: 100%; }
+  .mare { fill: var(--fondo); stroke: var(--linea); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .terra { fill: var(--fondo-2); }
+  .confini { fill: none; stroke: var(--linea); stroke-width: 0.8; }
+
+  /* Linee tratteggiate (senza punta): il tratteggio scorre verso Napoli. */
+  .arco {
+    fill: none; stroke: var(--accento); stroke-width: 2; stroke-linecap: round;
+    stroke-dasharray: 6 7;
+    animation: scorre 1.2s linear infinite;
+  }
+  @keyframes scorre { to { stroke-dashoffset: -13; } }
+  @media (prefers-reduced-motion: reduce) { .arco { animation: none; } }
+  /* Le linee non si vedono finché non si tocca una città: allora la sua linea
+     si disegna dalla città fino a Napoli. Chiudendo, sfuma via. */
+  .via { opacity: 0; transition: opacity 0.4s; }
+  .via.aperta { opacity: 1; transition: none; }
+  .rivela {
+    fill: none; stroke: #fff; stroke-linecap: butt;
+    stroke-dasharray: 1 2; stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0s 0.4s;
+  }
+  .via.aperta .rivela { stroke-dashoffset: 0; transition: stroke-dashoffset 1.4s cubic-bezier(0.45, 0, 0.25, 1); }
+  @media (prefers-reduced-motion: reduce) { .via.aperta .rivela { transition: none; } }
+
+  /* Segni: posizionati dallo script in percentuale sulla vista. */
+  .segno {
+    position: absolute; left: 0; top: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    transform: translate(-50%, -7px);
+    font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0;
+  }
+  .punto {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accento); border: 3px solid var(--fondo);
+    transition: transform 0.2s;
+  }
+  .napoli { transform: translate(-50%, -9px); pointer-events: none; }
+  .napoli .punto {
+    width: 18px; height: 18px; background: var(--testo);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--testo) 25%, transparent);
+  }
+  .nome {
+    margin-top: 6px; white-space: nowrap;
+    font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--testo-2);
+    text-shadow: 0 0 4px var(--fondo), 0 0 8px var(--fondo), 0 0 12px var(--fondo);
+  }
+  .napoli .nome { color: var(--testo); }
+  .luogo { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .lontano .luogo .nome { display: none; }
+  /* Area di tocco più grande del punto. */
+  .luogo::before { content: ''; position: absolute; inset: -12px -14px; }
+  .luogo.inizio { align-items: flex-start; transform: translate(-7px, -7px); }
+  .luogo.fine { align-items: flex-end; transform: translate(calc(-100% + 7px), -7px); }
+  .luogo:hover .nome, .luogo[aria-expanded='true'] .nome { color: var(--accento); }
+  .luogo:hover .punto, .luogo[aria-expanded='true'] .punto { transform: scale(1.3); }
+
+  /* Pop-up: sopra il punto, tenuto dentro la vista dallo script. */
+  .popup {
+    position: absolute; left: 0; top: 0; z-index: 3; width: min(230px, 70%);
+    /* Fuori dal globo (si vede rimpicciolendo): un tono più scuro del mare. */
+    background: color-mix(in srgb, var(--fondo) 60%, #000); border: 1px solid var(--linea);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+    cursor: auto;
+  }
+  .popup[hidden] { display: none; }
+  /* Il pop-up compare quando la linea è arrivata a Napoli. */
+  .popup { transition: opacity 0.4s; }
+  .popup.attesa { opacity: 0; pointer-events: none; }
+  .popup a { display: block; text-decoration: none; padding-bottom: 12px; }
+  .popup img { width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
+  .popup .citta, .popup .titolo, .popup .guarda { display: block; padding: 0 12px; }
+  .popup .citta {
+    margin-top: 10px; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--testo-2);
+  }
+  .popup .titolo { font-family: var(--serif); font-size: 1.05rem; line-height: 1.2; margin-top: 2px; }
+  .popup .guarda { margin-top: 8px; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accento); }
+  .popup a:hover .titolo { color: var(--accento); }
+  .chiudi {
+    position: absolute; top: 4px; right: 4px; z-index: 1; width: 32px; height: 32px;
+    border: 0; border-radius: 50%; cursor: pointer;
+    background: color-mix(in srgb, var(--fondo) 80%, transparent); color: var(--testo);
+    font-size: 1.3rem; line-height: 1;
+  }
+  .chiudi:hover { color: var(--accento); }
+
+  .comandi {
+    position: absolute; right: 10px; bottom: 10px; z-index: 2;
+    display: flex; flex-direction: column; border: 1px solid var(--linea);
+  }
+  .comandi button {
+    width: 40px; height: 40px; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: color-mix(in srgb, var(--fondo) 90%, transparent); color: var(--testo);
+    font-family: var(--sans); font-size: 1.25rem; line-height: 1;
+  }
+  .comandi button + button { border-top: 1px solid var(--linea); }
+  .comandi button:hover { color: var(--accento); }
+  figcaption { margin-top: 12px; text-transform: none; letter-spacing: 0.02em; font-size: 0.82rem; }
+</style>
+
+<script>
+  // Zoom e spostamento della mappa, e apertura dei pop-up.
+  // Lo zoom agisce sul gruppo .piano dell'SVG (unità del viewBox); segni e pop-up
+  // restano della stessa grandezza e vengono riposizionati qui.
+  for (const figura of document.querySelectorAll<HTMLElement>('.mappa')) {
+    const W = Number(figura.dataset.w);
+    const H = Number(figura.dataset.h);
+    const vista = figura.querySelector<HTMLElement>('.vista')!;
+    const piano = vista.querySelector<SVGGElement>('.piano')!;
+    const segni = [...vista.querySelectorAll<HTMLElement>('.segno, .popup')];
+    const rivela = [...vista.querySelectorAll<SVGPathElement>('.rivela')];
+    const napoli = vista.querySelector<HTMLElement>('.napoli')!;
+    const nx = Number(napoli.dataset.x), ny = Number(napoli.dataset.y);
+    // Limiti del mondo intero (unità del viewBox a zoom 1).
+    const [mx0, my0, mx1, my1] = figura.dataset.mondo!.split(' ').map(Number);
+    // Zoom minimo: il mondo intero sta nella vista. Massimo: 10 volte la vista iniziale.
+    const MIN = Math.min(W / (mx1 - mx0), H / (my1 - my0)), MAX = 10;
+    let k = 1, tx = 0, ty = 0;
+
+    // Pixel dello schermo → unità del viewBox.
+    const scala = () => W / vista.getBoundingClientRect().width;
+    const puntoVista = (cx: number, cy: number): [number, number] => {
+      const r = vista.getBoundingClientRect();
+      return [(cx - r.left) * W / r.width, (cy - r.top) * H / r.height];
+    };
+
+    // Non si va oltre il bordo del mondo; se il mondo è più piccolo della vista, sta al centro.
+    function limitaAsse(t: number, a: number, b: number, lato: number) {
+      if ((b - a) * k <= lato) return lato / 2 - ((a + b) / 2) * k;
+      return Math.min(-a * k, Math.max(lato - b * k, t));
+    }
+    function limita() {
+      k = Math.min(MAX, Math.max(MIN, k));
+      tx = limitaAsse(tx, mx0, mx1, W);
+      ty = limitaAsse(ty, my0, my1, H);
+    }
+
+    function aggiorna() {
+      piano.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
+      // Molto rimpicciolita le città sono vicine: restano i punti, i nomi si nascondono.
+      vista.classList.toggle('lontano', k < 0.7);
+      const s = scala();
+      // Maschera delle linee: sempre un po' più larga della linea (circa 12 px), a ogni zoom.
+      for (const m of rivela) m.style.strokeWidth = String((12 * s) / k);
+      for (const el of segni) {
+        const x = Number(el.dataset.x) * k + tx, y = Number(el.dataset.y) * k + ty;
+        // Fuori dalla vista (zoom forte): segno e pop-up spariscono.
+        el.style.visibility = x < 0 || x > W || y < 0 || y > H ? 'hidden' : '';
+        if (el.classList.contains('popup')) {
+          if (!el.hidden) posizionaPopup(el, x / s, y / s);
+        } else {
+          el.style.left = `${(x / W) * 100}%`;
+          el.style.top = `${(y / H) * 100}%`;
+        }
+      }
+    }
+
+    // Pop-up sopra il punto; se non c'è spazio, sotto. Sempre dentro la vista.
+    function posizionaPopup(el: HTMLElement, x: number, y: number) {
+      const r = vista.getBoundingClientRect();
+      const w = el.offsetWidth, h = el.offsetHeight, m = 8;
+      const left = Math.min(r.width - w - m, Math.max(m, x - w / 2));
+      let top = y - h - 18;
+      if (top < m) top = y + 18;
+      top = Math.max(m, Math.min(r.height - h - m, top));
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+    }
+
+    // Zoom attorno a un punto (in unità del viewBox): quel punto resta fermo.
+    function zoom(fattore: number, vx = W / 2, vy = H / 2) {
+      const k2 = Math.min(MAX, Math.max(MIN, k * fattore));
+      tx = vx - (vx - tx) * (k2 / k);
+      ty = vy - (vy - ty) * (k2 / k);
+      k = k2;
+      limita(); aggiorna();
+    }
+
+    // Rotellina (il pizzico del trackpad arriva come rotellina con ctrlKey).
+    vista.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const [vx, vy] = puntoVista(e.clientX, e.clientY);
+      zoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0025)), vx, vy);
+    }, { passive: false });
+
+    vista.addEventListener('dblclick', (e) => {
+      if ((e.target as Element).closest('.popup, .comandi, .luogo')) return;
+      const [vx, vy] = puntoVista(e.clientX, e.clientY);
+      zoom(2, vx, vy);
+    });
+
+    // Trascinamento con un dito o col mouse, pizzico con due dita.
+    // La cattura del puntatore parte solo dopo un piccolo spostamento,
+    // così il clic sulle città e sui pulsanti funziona normalmente.
+    const puntatori = new Map<number, { x: number; y: number }>();
+    let trascinato = false, inizio = { x: 0, y: 0 }, distanzaPrima = 0, fineTrascinamento = 0;
+
+    vista.addEventListener('pointerdown', (e) => {
+      if ((e.target as Element).closest('.popup, .comandi')) return;
+      // Primo dito di un nuovo gesto: dimentica eventuali puntatori rimasti dal gesto prima
+      // (a volte il tocco su un pulsante non manda pointerup alla vista).
+      if (e.isPrimary) puntatori.clear();
+      puntatori.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (puntatori.size === 1) { trascinato = false; inizio = { x: e.clientX, y: e.clientY }; }
+      if (puntatori.size === 2) {
+        const [a, b] = [...puntatori.values()];
+        distanzaPrima = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+    });
+
+    vista.addEventListener('pointermove', (e) => {
+      const prima = puntatori.get(e.pointerId);
+      if (!prima) return;
+      const ora = { x: e.clientX, y: e.clientY };
+      if (!trascinato && (puntatori.size > 1 || Math.hypot(ora.x - inizio.x, ora.y - inizio.y) > 5)) {
+        trascinato = true;
+        vista.classList.add('trascina');
+        for (const id of puntatori.keys()) vista.setPointerCapture(id);
+      }
+      puntatori.set(e.pointerId, ora);
+      if (!trascinato) return;
+      const s = scala();
+      // Maschera delle linee: sempre un po' più larga della linea (circa 12 px), a ogni zoom.
+      for (const m of rivela) m.style.strokeWidth = String((12 * s) / k);
+      // Con due dita ogni dito sposta la mappa di metà del suo movimento.
+      const peso = puntatori.size === 1 ? 1 : 0.5;
+      tx += (ora.x - prima.x) * s * peso;
+      ty += (ora.y - prima.y) * s * peso;
+      if (puntatori.size === 2) {
+        const [a, b] = [...puntatori.values()];
+        const distanza = Math.hypot(a.x - b.x, a.y - b.y);
+        const [vx, vy] = puntoVista((a.x + b.x) / 2, (a.y + b.y) / 2);
+        if (distanzaPrima > 0) zoom(distanza / distanzaPrima, vx, vy);
+        distanzaPrima = distanza;
+      } else {
+        limita(); aggiorna();
+      }
+    });
+
+    const fine = (e: PointerEvent) => {
+      puntatori.delete(e.pointerId);
+      if (puntatori.size === 0) {
+        vista.classList.remove('trascina');
+        if (trascinato) fineTrascinamento = performance.now();
+        trascinato = false;
+      }
+    };
+    vista.addEventListener('pointerup', fine);
+    vista.addEventListener('pointercancel', fine);
+
+    // Il clic che arriva subito alla fine di un trascinamento non apre nulla.
+    vista.addEventListener('click', (e) => {
+      if (performance.now() - fineTrascinamento < 250) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    // Pulsanti + − e vista intera. Lo zoom resta centrato su Napoli finché è in vista
+    // (tutte le frecce arrivano lì); altrimenti sul centro della vista.
+    const centroZoom = (): [number, number] => {
+      const x = nx * k + tx, y = ny * k + ty;
+      return x >= 0 && x <= W && y >= 0 && y <= H ? [x, y] : [W / 2, H / 2];
+    };
+    for (const b of vista.querySelectorAll<HTMLButtonElement>('[data-zoom]')) {
+      b.addEventListener('click', () => {
+        if (b.dataset.zoom === 'in') zoom(1.6, ...centroZoom());
+        else if (b.dataset.zoom === 'out') zoom(1 / 1.6, ...centroZoom());
+        else { k = 1; tx = 0; ty = 0; aggiorna(); }
+      });
+    }
+    // Tastiera, quando la mappa ha il focus: + − e frecce.
+    vista.addEventListener('keydown', (e) => {
+      if (e.target !== vista) return;
+      const passo = 60;
+      const azioni: Record<string, () => void> = {
+        '+': () => zoom(1.6, ...centroZoom()), '=': () => zoom(1.6, ...centroZoom()),
+        '-': () => zoom(1 / 1.6, ...centroZoom()),
+        ArrowLeft: () => { tx += passo; }, ArrowRight: () => { tx -= passo; },
+        ArrowUp: () => { ty += passo; }, ArrowDown: () => { ty -= passo; },
+      };
+      const a = azioni[e.key];
+      if (a) { e.preventDefault(); a(); limita(); aggiorna(); }
+    });
+
+    // Pop-up: uno alla volta; si chiude con ×, Esc o toccando fuori.
+    const luoghi = [...vista.querySelectorAll<HTMLButtonElement>('.luogo')];
+    const popupDi = (l: HTMLElement) => document.getElementById(l.getAttribute('aria-controls')!)!;
+    // Tempo per disegnare la linea (come in CSS); con "Riduci movimento" niente attesa.
+    const pocoMovimento = matchMedia('(prefers-reduced-motion: reduce)');
+    let attesa = 0;
+    const viaDi = (l: HTMLElement) => vista.querySelector(`[data-via="${l.getAttribute('aria-controls')}"]`);
+    function chiudiTutti() {
+      clearTimeout(attesa);
+      for (const l of luoghi) {
+        l.setAttribute('aria-expanded', 'false');
+        popupDi(l).hidden = true;
+        viaDi(l)?.classList.remove('aperta');
+      }
+    }
+    for (const l of luoghi) {
+      l.addEventListener('click', () => {
+        const popup = popupDi(l);
+        const eraAperto = !popup.hidden;
+        chiudiTutti();
+        if (eraAperto) return;
+        l.setAttribute('aria-expanded', 'true');
+        // Prima la linea si disegna dalla città fino a Napoli, poi compare il pop-up.
+        viaDi(l)?.classList.add('aperta');
+        popup.classList.add('attesa');
+        popup.hidden = false;
+        aggiorna();
+        attesa = window.setTimeout(() => popup.classList.remove('attesa'), pocoMovimento.matches ? 0 : 1400);
+        // Quando la miniatura è caricata l'altezza cambia: riposiziona.
+        popup.querySelector('img')?.addEventListener('load', aggiorna, { once: true });
+      });
+    }
+    for (const c of vista.querySelectorAll<HTMLButtonElement>('.chiudi')) {
+      c.addEventListener('click', (e) => {
+        const popup = c.closest<HTMLElement>('.popup')!;
+        chiudiTutti();
+        luoghi.find((l) => popupDi(l) === popup)?.focus();
+        e.stopPropagation();
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (!(e.target as Element).closest('.popup, .luogo')) chiudiTutti();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudiTutti(); });
+
+    new ResizeObserver(aggiorna).observe(vista);
+    aggiorna();
+  }
+</script>

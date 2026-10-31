@@ -36,7 +36,7 @@ sempre l'inglese. C'è la **traduzione italiana** sotto `/it/`, con gli stessi i
 (`/it/about/`, `/it/sessions/NN/`…). Nella barra in alto una bandierina porta alla stessa pagina
 nell'altra lingua (bandiera italiana sul sito inglese, britannica su quello italiano).
 Questo file e i commenti nel codice restano in italiano.
-Pagine: `/` (tutti i video), `/sessions/NN/`, `/about/`, `/suggest/`, `/privacy/`.
+Pagine: `/` (tutti i video), `/sessions/NN/`, `/map/`, `/about/`, `/suggest/`, `/privacy/`.
 Come è fatto: le pagine vere stanno in `src/pagine/` e ricevono la lingua `l`; i file in
 `src/pages/` (inglese) e `src/pages/it/` (italiano) le pubblicano. Testi comuni (menu, pulsanti)
 in `src/i18n.ts`; testi di una sola pagina in cima al suo file in `src/pagine/`.
@@ -102,9 +102,20 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
   del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
+  Se il titolo non entra in una riga, il brano va a capo intero invece di spezzarsi
+  (`src/components/TitoloSessione.astro`, usato in home, pagina del video e pop-up della mappa).
 - Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
   (ritagliato e reso trasparente). Va sostituito con il file originale.
-- La mappa è stata tolta su richiesta di Bruno.
+- Mappa (`/map/`, voce "Map"/"Mappa" nel menu): frecce dalle città di provenienza degli artisti
+  fino a Napoli. Solo gli artisti internazionali (scelta di Bruno). Dati in `src/data/provenienze.json`
+  (solo provenienze confermate da Bruno); disegno in `src/components/MappaProvenienze.astro`,
+  SVG statico generato in build con d3-geo e i confini Natural Earth (`world-atlas`): niente servizi esterni.
+  Linee tratteggiate senza punta (il tratteggio scorre verso Napoli). All'apertura si vedono solo i punti:
+  toccando una città la sua linea si disegna fino a Napoli (1,4 s), poi compare il pop-up (prova da far vedere a Bruno). È disegnato tutto il mondo (confini 50m
+  semplificati con topojson-simplify, per tenere la pagina leggera): si apre inquadrata sulle città e si
+  può rimpicciolire fino al mondo intero e ingrandire fino a 10×. Rotellina, pizzico, doppio clic,
+  pulsanti +/− (centrati su Napoli) e trascinamento. Clic su una città: pop-up con miniatura, titolo
+  e link alla pagina del video. Per ogni città `allinea` (inizio/fine) tiene il nome dentro lo schermo.
 
 ## Lavoro
 

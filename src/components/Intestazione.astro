@@ -10,6 +10,7 @@ const t = TESTI[l];
 // La bandierina porta alla stessa pagina nell'altra lingua.
 const altra = l === 'en' ? 'it' : 'en';
 const voci = [
+  { href: percorso(l, '/map/'), testo: t.mappa },
   { href: percorso(l, '/about/'), testo: t.about },
   { href: percorso(l, '/suggest/'), testo: t.suggest },
 ];

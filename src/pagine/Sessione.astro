@@ -4,6 +4,7 @@
 import Base from '../layouts/Base.astro';
 import VideoYouTube from '../components/VideoYouTube.astro';
 import Segnaposto from '../components/Segnaposto.astro';
+import TitoloSessione from '../components/TitoloSessione.astro';
 import { numeroFormattato, titoloBreve, urlYouTube, type Sessione } from '../lib/sessioni';
 import { percorso, TESTI, type Lingua } from '../i18n';
 
@@ -24,7 +25,7 @@ const riassunto = descrizione
 <Base titolo={`${numeroFormattato(d.numero)} · ${titoloBreve(d.titolo)}`} descrizione={riassunto} immagine={`/miniature/${d.youtubeId}.jpg`}>
   <article class="sezione contenitore">
     <p class="numero">{numeroFormattato(d.numero)}</p>
-    <h1>{titoloBreve(d.titolo)}</h1>
+    <h1><TitoloSessione titolo={d.titolo} /></h1>
 
     <VideoYouTube id={d.youtubeId} titolo={d.titolo} />
 
