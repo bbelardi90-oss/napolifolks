@@ -3,7 +3,8 @@
 // Il titolo compare sopra l'immagine, scurendola, al passaggio del mouse
 // (su telefono: quando il video passa al centro dello schermo scorrendo).
 import type { Sessione } from '../lib/sessioni';
-import { numeroFormattato, titoloBreve, dimensioniMiniatura } from '../lib/sessioni';
+import TitoloSessione from './TitoloSessione.astro';
+import { numeroFormattato, dimensioniMiniatura } from '../lib/sessioni';
 import { linguaDa, percorso } from '../i18n';
 
 interface Props { sessione: Sessione; primo?: boolean }
@@ -30,7 +31,7 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
     />
     <span class="velo">
       <span class="numero">{numeroFormattato(d.numero)}</span>
-      <span class="titolo">{titoloBreve(d.titolo)}</span>
+      <span class="titolo"><TitoloSessione titolo={d.titolo} /></span>
     </span>
   </a>
 </li>

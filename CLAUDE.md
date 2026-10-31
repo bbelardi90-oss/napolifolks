@@ -102,6 +102,8 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
 - Nei titoli mostrati non si ripete "Napoli Folks Live #N": restano numero e il resto
   del titolo del video (`titoloBreve` in `src/lib/sessioni.ts`). Il numero si scrive `#1`
   (non `01`); tra artista e brano c'è una lineetta ` – ` al posto della prima virgola.
+  Se il titolo non entra in una riga, il brano va a capo intero invece di spezzarsi
+  (`src/components/TitoloSessione.astro`, usato in home, pagina del video e pop-up della mappa).
 - Logo provvisorio preso dall'immagine del canale YouTube: `public/logo/logo.png`
   (ritagliato e reso trasparente). Va sostituito con il file originale.
 - Mappa (`/map/`, voce "Map"/"Mappa" nel menu): frecce dalle città di provenienza degli artisti

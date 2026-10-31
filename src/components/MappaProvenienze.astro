@@ -12,7 +12,8 @@ import mondo50 from 'world-atlas/countries-50m.json';
 import provenienze from '../data/provenienze.json';
 import { getEntry } from 'astro:content';
 import { percorso, type Lingua } from '../i18n';
-import { titoloBreve, numeroFormattato, dimensioniMiniatura } from '../lib/sessioni';
+import TitoloSessione from './TitoloSessione.astro';
+import { numeroFormattato, dimensioniMiniatura } from '../lib/sessioni';
 
 interface Props { l: Lingua; descrizione: string }
 const { l, descrizione } = Astro.props;
@@ -74,7 +75,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     id: `luogo-${o.sessione}`, d, angolo, ritardo: -i * 0.4,
     x: ox, y: oy,
     citta: o.citta[l], allinea: o.allinea,
-    numero: numeroFormattato(s.numero), titolo: titoloBreve(s.titolo),
+    numero: numeroFormattato(s.numero), titolo: s.titolo,
     miniatura: `/miniature/${s.youtubeId}.jpg`, ...dimensioniMiniatura(s.youtubeId),
     href: percorso(l, `/sessions/${o.sessione}/`),
   };
@@ -117,7 +118,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
         <a href={f.href}>
           <img src={f.miniatura} alt="" width={f.larghezza} height={f.altezza} loading="lazy" decoding="async" />
           <span class="citta">{f.citta}</span>
-          <span class="titolo">{f.numero} {f.titolo}</span>
+          <span class="titolo">{f.numero} <TitoloSessione titolo={f.titolo} /></span>
           <span class="guarda">{testi.guarda} →</span>
         </a>
       </div>

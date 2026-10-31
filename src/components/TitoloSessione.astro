@@ -1,0 +1,14 @@
+---
+// Titolo di una sessione "Artista – Brano". Artista e brano sono due blocchi:
+// se il brano non entra nella riga va a capo intero, invece di spezzarsi.
+// (Se un blocco da solo è più lungo della riga, si spezza al suo interno.)
+import { partiTitolo } from '../lib/sessioni';
+
+interface Props { titolo: string }
+const { artista, brano } = partiTitolo(Astro.props.titolo);
+---
+<span class="parte">{artista}</span>{brano && <>{' '}<span class="parte">{brano}</span></>}
+
+<style>
+  .parte { display: inline-block; max-width: 100%; }
+</style>
