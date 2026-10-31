@@ -110,7 +110,7 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
   fino a Napoli. Solo gli artisti internazionali (scelta di Bruno). Dati in `src/data/provenienze.json`
   (solo provenienze confermate da Bruno); disegno in `src/components/MappaProvenienze.astro`,
   SVG statico generato in build con d3-geo e i confini Natural Earth (`world-atlas`): niente servizi esterni.
-  Frecce tratteggiate (il tratteggio scorre verso Napoli). È disegnato tutto il mondo (confini 50m
+  Linee tratteggiate senza punta (il tratteggio scorre verso Napoli). È disegnato tutto il mondo (confini 50m
   semplificati con topojson-simplify, per tenere la pagina leggera): si apre inquadrata sulle città e si
   può rimpicciolire fino al mondo intero e ingrandire fino a 10×. Rotellina, pizzico, doppio clic,
   pulsanti +/− (centrati su Napoli) e trascinamento. Clic su una città: pop-up con miniatura, titolo

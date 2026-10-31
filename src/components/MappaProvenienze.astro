@@ -1,5 +1,5 @@
 ---
-// Mappa con le frecce tratteggiate dalle città di provenienza degli artisti fino a Napoli.
+// Mappa con le linee tratteggiate dalle città di provenienza degli artisti fino a Napoli.
 // Disegnata in fase di build (d3-geo + confini Natural Earth da world-atlas): la pagina
 // pubblicata è un SVG statico e non contatta nessun servizio esterno.
 // Zoom: rotellina, pizzico, doppio clic, pulsanti +/−; si sposta trascinando.
@@ -57,14 +57,11 @@ const [nx, ny] = xy(napoli);
 const f1 = (n: number) => n.toFixed(1);
 
 // Ogni freccia segue l'arco più breve sul globo (cerchio massimo) fino al centro di Napoli.
-// La punta è disegnata dallo script a distanza fissa dal punto, qualunque sia lo zoom.
 const frecce = await Promise.all(origini.map(async (o, i) => {
   const interpola = geoInterpolate(o.coordinate, napoli);
   const passi = 64;
   const tratto: [number, number][] = [];
   for (let k = 0; k <= passi; k++) tratto.push(xy(interpola(k / passi) as Punto));
-  const [ax, ay] = tratto[passi - 2];
-  const angolo = (Math.atan2(ny - ay, nx - ax) * 180) / Math.PI;
   const d = tratto.map(([x, y], k) => `${k ? 'L' : 'M'}${f1(x)} ${f1(y)}`).join('');
 
   const sessione = await getEntry('sessioni', o.sessione);
@@ -72,7 +69,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   const s = sessione.data;
   const [ox, oy] = xy(o.coordinate);
   return {
-    id: `luogo-${o.sessione}`, d, angolo, ritardo: -i * 0.4,
+    id: `luogo-${o.sessione}`, d, ritardo: -i * 0.4,
     x: ox, y: oy,
     citta: o.citta[l], allinea: o.allinea,
     numero: numeroFormattato(s.numero), titolo: s.titolo,
@@ -92,9 +89,6 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
           <path class="arco" d={f.d} vector-effect="non-scaling-stroke" style={`animation-delay:${f.ritardo}s`} />
         ))}
       </g>
-      {frecce.map((f) => (
-        <path class="punta" d="M0 0 L-14 -6 L-14 6 Z" data-angolo={f1(f.angolo)} />
-      ))}
     </svg>
 
     <!-- Segni sopra la mappa: lo script li riposiziona a ogni zoom o spostamento. -->
@@ -148,7 +142,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   .terra { fill: var(--fondo-2); }
   .confini { fill: none; stroke: var(--linea); stroke-width: 0.8; }
 
-  /* Frecce tratteggiate: il tratteggio scorre verso Napoli. */
+  /* Linee tratteggiate (senza punta): il tratteggio scorre verso Napoli. */
   .arco {
     fill: none; stroke: var(--accento); stroke-width: 2; stroke-linecap: round;
     stroke-dasharray: 6 7;
@@ -156,7 +150,6 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   }
   @keyframes scorre { to { stroke-dashoffset: -13; } }
   @media (prefers-reduced-motion: reduce) { .arco { animation: none; } }
-  .punta { fill: var(--accento); }
 
   /* Segni: posizionati dallo script in percentuale sulla vista. */
   .segno {
@@ -233,14 +226,13 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
 
 <script>
   // Zoom e spostamento della mappa, e apertura dei pop-up.
-  // Lo zoom agisce sul gruppo .piano dell'SVG (unità del viewBox); segni, punte e pop-up
+  // Lo zoom agisce sul gruppo .piano dell'SVG (unità del viewBox); segni e pop-up
   // restano della stessa grandezza e vengono riposizionati qui.
   for (const figura of document.querySelectorAll<HTMLElement>('.mappa')) {
     const W = Number(figura.dataset.w);
     const H = Number(figura.dataset.h);
     const vista = figura.querySelector<HTMLElement>('.vista')!;
     const piano = vista.querySelector<SVGGElement>('.piano')!;
-    const punte = [...vista.querySelectorAll<SVGPathElement>('.punta')];
     const segni = [...vista.querySelectorAll<HTMLElement>('.segno, .popup')];
     const napoli = vista.querySelector<HTMLElement>('.napoli')!;
     const nx = Number(napoli.dataset.x), ny = Number(napoli.dataset.y);
@@ -273,13 +265,6 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
       // Molto rimpicciolita le città sono vicine: restano i punti, i nomi si nascondono.
       vista.classList.toggle('lontano', k < 0.7);
       const s = scala();
-      // Punte delle frecce: a distanza fissa (in pixel) dal centro di Napoli.
-      const px = nx * k + tx, py = ny * k + ty;
-      for (const p of punte) {
-        const a = Number(p.dataset.angolo), rad = (a * Math.PI) / 180, dist = 13 * s;
-        const x = px - Math.cos(rad) * dist, y = py - Math.sin(rad) * dist;
-        p.setAttribute('transform', `translate(${x} ${y}) rotate(${a}) scale(${s})`);
-      }
       for (const el of segni) {
         const x = Number(el.dataset.x) * k + tx, y = Number(el.dataset.y) * k + ty;
         // Fuori dalla vista (zoom forte): segno e pop-up spariscono.
