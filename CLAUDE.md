@@ -22,7 +22,8 @@ si inseriscono solo dopo la conferma di Bruno.
   artisti che si trovano a passare per Napoli; raramente fuori città (è successo a Sessa Aurunca).
 - Squadra (pagina "Chi siamo"): Marcello Squillante, direzione artistica; Luca Lanzano,
   filmmaker; Bruno Belardi, fonico. Bio brevi in `about.astro` (mestiere + attività
-  principale, niente premi: scelta di Bruno). Foto: da ricevere.
+  principale, niente premi: scelta di Bruno). Una persona per riga: foto piccola a sinistra,
+  bio a destra (anche su telefono). Foto: da ricevere.
 - Instagram: https://www.instagram.com/napoli_folks_live/
 - YouTube: https://www.youtube.com/@napolifolkslive (ID canale `UCgBHZocloDLg_bqVOI0iddA`).
 - Email: napolifolks@gmail.com

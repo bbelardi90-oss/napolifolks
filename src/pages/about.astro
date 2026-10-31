@@ -45,12 +45,14 @@ const link = [
         <li class="persona">
           {p.foto
             ? <img class="foto" src={p.foto} alt={p.nome} width="800" height="1000" loading="lazy" />
-            : <div class="foto vuota"><Segnaposto>photo of {p.nome}</Segnaposto></div>}
-          <h2>{p.nome}</h2>
-          <p class="ruolo dettaglio">{p.ruolo}</p>
-          {p.bio
-            ? <p class="bio" set:html={p.bio} />
-            : <Segnaposto blocco>bio of {p.nome}</Segnaposto>}
+            : <div class="foto vuota"><Segnaposto>photo</Segnaposto></div>}
+          <div class="scheda">
+            <h2>{p.nome}</h2>
+            <p class="ruolo dettaglio">{p.ruolo}</p>
+            {p.bio
+              ? <p class="bio" set:html={p.bio} />
+              : <Segnaposto blocco>bio of {p.nome}</Segnaposto>}
+          </div>
         </li>
       ))}
     </ul>
@@ -74,20 +76,24 @@ const link = [
 
 <style>
   .apertura { font-family: var(--serif); font-size: clamp(1.35rem, 3.2vw, 1.9rem); line-height: 1.25; margin-bottom: 0.6em; }
+  /* Squadra: una persona per riga, foto piccola a sinistra e testo a destra (anche su telefono). */
   .squadra {
     list-style: none; margin: clamp(40px, 7vw, 80px) 0; padding: 0;
-    display: grid; gap: clamp(40px, 5vw, 56px) clamp(24px, 3vw, 40px);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    display: grid; gap: clamp(32px, 5vw, 48px); max-width: 44em;
   }
-  .persona { display: grid; align-content: start; gap: 0; }
-  .foto { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; margin-bottom: 20px; }
+  .persona {
+    display: grid; align-items: start;
+    grid-template-columns: clamp(96px, 24vw, 160px) 1fr;
+    gap: clamp(16px, 3vw, 32px);
+  }
+  .foto { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
   .foto.vuota {
-    display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px;
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px;
     background: var(--fondo-2); border: 1px solid var(--linea);
   }
-  .persona h2 { font-size: clamp(1.6rem, 3vw, 2rem); margin: 0 0 6px; }
-  .ruolo { margin: 0 0 14px; color: var(--accento); }
-  .bio { margin: 0; color: var(--testo-2); max-width: 32em; }
+  .persona h2 { font-size: clamp(1.3rem, 3vw, 1.8rem); line-height: 1.15; margin: 0 0 4px; }
+  .ruolo { margin: 0 0 10px; color: var(--accento); }
+  .bio { margin: 0; color: var(--testo-2); }
   .titolo-contatti { margin-top: 0; }
   .contatti { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .contatti a { display: inline-flex; align-items: center; gap: 14px; padding: 8px 0; text-decoration: none; }
