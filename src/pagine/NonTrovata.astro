@@ -1,0 +1,18 @@
+---
+// Pagina 404. Cloudflare Pages usa dist/404.html e, sotto /it/, dist/it/404.html.
+import Base from '../layouts/Base.astro';
+import { percorso, type Lingua } from '../i18n';
+
+interface Props { l: Lingua }
+const { l } = Astro.props;
+const testi = {
+  en: { titolo: 'Page not found', home: 'Back to the home page' },
+  it: { titolo: 'Pagina non trovata', home: 'Torna alla home' },
+}[l];
+---
+<Base titolo={testi.titolo} nonTrovata>
+  <section class="sezione contenitore">
+    <h1>{testi.titolo}</h1>
+    <p><a href={percorso(l, '/')}>{testi.home}</a></p>
+  </section>
+</Base>

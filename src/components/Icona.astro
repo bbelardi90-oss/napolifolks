@@ -1,0 +1,41 @@
+---
+// Icone semplici disegnate a tratto, colore preso dal testo (currentColor).
+interface Props { nome: 'instagram' | 'youtube' | 'email'; dimensione?: number }
+const { nome, dimensione = 22 } = Astro.props;
+---
+<svg
+  class="icona"
+  width={dimensione}
+  height={dimensione}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {nome === 'instagram' && (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.4" cy="6.6" r="0.6" fill="currentColor" stroke="none" />
+    </>
+  )}
+  {nome === 'youtube' && (
+    <>
+      <rect x="2.5" y="5.5" width="19" height="13" rx="3.5" />
+      <path d="M10.2 9.3v5.4l4.6-2.7z" fill="currentColor" stroke="none" />
+    </>
+  )}
+  {nome === 'email' && (
+    <>
+      <rect x="3" y="5.5" width="18" height="13" rx="2" />
+      <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+    </>
+  )}
+</svg>
+
+<style>
+  .icona { display: block; flex: none; }
+</style>

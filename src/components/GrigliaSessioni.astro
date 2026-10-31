@@ -1,0 +1,96 @@
+---
+import type { Sessione } from '../lib/sessioni';
+import SchedaSessione from './SchedaSessione.astro';
+
+interface Props { sessioni: Sessione[] }
+const { sessioni } = Astro.props;
+---
+<!--
+  Da telefono: una colonna. Da computer (>= 900 px): l'ultima uscita a tutta
+  larghezza, poi le altre su tre colonne, sempre senza spazi tra i riquadri.
+-->
+<ul class="galleria">
+  {sessioni.map((s, i) => <SchedaSessione sessione={s} primo={i === 0} />)}
+</ul>
+
+<style>
+  /* overflow-x: clip impedisce lo scorrimento orizzontale se un riquadro esce di poco. */
+  .galleria { margin: 0; padding: 0; display: grid; gap: 0; overflow-x: clip; }
+
+  @media (min-width: 900px) {
+    /* Griglia da 6: i riquadri piccoli ne occupano 2 (= tre colonne). */
+    .galleria { grid-template-columns: repeat(6, 1fr); }
+    .galleria > :global(*) { grid-column: span 2; }
+    /* L'ultima uscita (prima in elenco) a tutta larghezza. */
+    .galleria > :global(:first-child) { grid-column: 1 / -1; }
+    /* Ultima riga incompleta: due riquadri a metà, oppure uno a tutta larghezza. */
+    .galleria > :global(:nth-last-child(2):nth-child(3n + 2)),
+    .galleria > :global(:last-child:nth-child(3n + 3)) { grid-column: span 3; }
+    .galleria > :global(:last-child:nth-child(3n + 2):not(:first-child)) { grid-column: 1 / -1; }
+
+    /* Da dove cresce il riquadro quando ci passa sopra il mouse:
+       colonna sinistra verso destra, destra verso sinistra, centrale dal centro. */
+    .galleria > :global(:nth-child(3n + 2)) { transform-origin: left center; }
+    .galleria > :global(:nth-child(3n + 3)) { transform-origin: center center; }
+    .galleria > :global(:nth-child(3n + 4)) { transform-origin: right center; }
+    .galleria > :global(:last-child:nth-child(3n + 3)) { transform-origin: right center; }
+  }
+</style>
+
+<script>
+  // Col mouse: un riquadro alla volta. Il nuovo cresce solo quando il precedente
+  // è tornato alla misura normale.
+  if (window.matchMedia('(hover: hover)').matches) {
+    const ATTESA = 80; // ms prima di crescere: passando veloce non si accendono tutti
+    const RITORNO = 700; // ms: deve corrispondere alla durata di chiusura nel CSS
+    let aperto: HTMLElement | null = null;
+    let inChiusura: HTMLElement | null = null;
+    let fineChiusura = 0;
+    let timer = 0;
+    let candidato: HTMLElement | null = null;
+
+    const chiudi = (q: HTMLElement) => {
+      q.classList.remove('aperto');
+      q.classList.add('chiusura');
+      inChiusura = q;
+      fineChiusura = performance.now() + RITORNO;
+      window.setTimeout(() => {
+        q.classList.remove('chiusura');
+        if (inChiusura === q) inChiusura = null;
+      }, RITORNO);
+      if (aperto === q) aperto = null;
+    };
+
+    const apri = (q: HTMLElement) => {
+      if (candidato !== q) return;
+      q.classList.remove('chiusura');
+      q.classList.add('aperto');
+      aperto = q;
+    };
+
+    document.querySelectorAll<HTMLElement>('.quadro').forEach((q) => {
+      q.addEventListener('mouseenter', () => {
+        candidato = q;
+        window.clearTimeout(timer);
+        if (aperto && aperto !== q) chiudi(aperto);
+        if (aperto === q) return;
+        const attesa = Math.max(ATTESA, fineChiusura - performance.now());
+        timer = window.setTimeout(() => apri(q), attesa);
+      });
+      q.addEventListener('mouseleave', () => {
+        if (candidato === q) candidato = null;
+        window.clearTimeout(timer);
+        if (aperto === q) chiudi(q);
+      });
+    });
+  }
+
+  // Su telefono il titolo compare solo mentre il dito tocca il video
+  // e sparisce quando il dito si alza.
+  document.querySelectorAll('.quadro').forEach((q) => {
+    q.addEventListener('touchstart', () => q.classList.add('attivo'), { passive: true });
+    const spegni = () => q.classList.remove('attivo');
+    q.addEventListener('touchend', spegni);
+    q.addEventListener('touchcancel', spegni);
+  });
+</script>

@@ -1,0 +1,42 @@
+---
+import { SITO } from '../config';
+import Icona from './Icona.astro';
+import { linguaDa, percorso, TESTI } from '../i18n';
+const l = linguaDa(Astro.url);
+---
+<footer class="piede">
+  <div class="contenitore griglia">
+    <p class="marchio"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" loading="lazy" /></p>
+    <ul class="social">
+      <li><a href={SITO.instagram} rel="noopener" aria-label="Instagram"><Icona nome="instagram" /></a></li>
+      <li><a href={SITO.youtube} rel="noopener" aria-label="YouTube"><Icona nome="youtube" /></a></li>
+      <li><a href={`mailto:${SITO.email}`} aria-label={`Email: ${SITO.email}`}><Icona nome="email" /></a></li>
+    </ul>
+    <ul class="contatti">
+      <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
+      <li><a href={percorso(l, '/privacy/')}>{TESTI[l].privacy}</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .piede { border-top: 1px solid var(--linea); padding: 40px 0 56px; margin-top: 0; }
+  .griglia { display: grid; gap: 24px; }
+  .marchio { margin: 0; line-height: 0; }
+  .marchio img { height: 64px; width: auto; }
+  .social { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; }
+  .social a {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    color: var(--testo); border: 1px solid var(--linea); border-radius: 50%;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .social a:hover { color: var(--accento); border-color: var(--accento); }
+  .contatti {
+    list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px;
+    font-family: var(--sans); font-size: 0.85rem; color: var(--testo-2);
+  }
+  .contatti a { text-decoration: none; }
+  @media (min-width: 860px) {
+    .griglia { grid-template-columns: 1fr auto auto; align-items: center; gap: 40px; }
+  }
+</style>

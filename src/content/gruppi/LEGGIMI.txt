@@ -1,0 +1,12 @@
+Un file .md per gruppo, per esempio nome-del-gruppo.md:
+
+---
+nome: "Nome del gruppo"
+descrizione: null        # solo testo fornito da Bruno, altrimenti null
+link:
+  - etichetta: "Instagram"
+    url: "https://..."
+---
+
+Il nome del file (senza .md) è l'identificativo da scrivere nel campo
+"gruppo" delle sessioni. Nessun gruppo va inserito senza conferma di Bruno.

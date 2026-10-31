@@ -1,0 +1,86 @@
+---
+// Una sessione: il fotogramma del video a tutta larghezza.
+// Il titolo compare sopra l'immagine, scurendola, al passaggio del mouse
+// (su telefono: quando il video passa al centro dello schermo scorrendo).
+import type { Sessione } from '../lib/sessioni';
+import { numeroFormattato, titoloBreve, dimensioniMiniatura } from '../lib/sessioni';
+import { linguaDa, percorso } from '../i18n';
+
+interface Props { sessione: Sessione; primo?: boolean }
+const { sessione, primo = false } = Astro.props;
+const d = sessione.data;
+const anno = d.dataPubblicazione ? String(d.dataPubblicazione.getFullYear()) : '';
+const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
+---
+<li
+  class="quadro"
+  data-artist={d.gruppo?.id ?? ''}
+  data-location={d.luogo?.id ?? ''}
+  data-year={anno}
+>
+  <a href={percorso(linguaDa(Astro.url), `/sessions/${sessione.id}/`)}>
+    <img
+      src={`/miniature/${d.youtubeId}.jpg`}
+      alt=""
+      width={larghezza}
+      height={altezza}
+      loading={primo ? 'eager' : 'lazy'}
+      fetchpriority={primo ? 'high' : undefined}
+      decoding="async"
+    />
+    <span class="velo">
+      <span class="numero">{numeroFormattato(d.numero)}</span>
+      <span class="titolo">{titoloBreve(d.titolo)}</span>
+    </span>
+  </a>
+</li>
+
+<style>
+  /* Ingrandimento dei riquadri (vedi lo script in GrigliaSessioni.astro):
+     - col mouse lo script aggiunge .aperto: il riquadro si gonfia lentamente (1,2 s);
+     - togliendo .aperto torna alla misura normale (0,7 s) con classe .chiusura;
+     - un riquadro nuovo cresce solo dopo che il precedente è tornato normale,
+       così non si sovrappongono mai due riquadri ingranditi.
+     Volutamente animato anche con "Riduci movimento" attivo (scelta di Bruno). */
+  .quadro {
+    list-style: none; position: relative; z-index: 0;
+    transition-property: transform, box-shadow;
+    transition-duration: 0.7s, 0.7s;
+    transition-timing-function: cubic-bezier(0.45, 0, 0.25, 1), cubic-bezier(0.45, 0, 0.25, 1);
+    will-change: transform;
+  }
+  .quadro.chiusura { z-index: 10; }
+  .quadro.aperto, .quadro.attivo { transition-duration: 1.2s, 1.2s; z-index: 20; }
+  /* Col dito premuto (telefono) il riquadro cresce un po' sopra i vicini. */
+  .quadro.attivo { transform: scale(1.06); box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7); }
+  /* Col mouse: i riquadri piccoli (tre colonne) crescono di un terzo;
+     quelli a tutta larghezza cambiano solo di poco. */
+  .quadro.aperto { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75); transform: scale(1.02); }
+  @media (min-width: 900px) {
+    .quadro.aperto:not(:first-child) { transform: scale(1.35); }
+    .quadro.aperto:last-child:nth-child(3n + 2):not(:first-child) { transform: scale(1.02); }
+  }
+  a { position: relative; display: block; text-decoration: none; color: var(--testo); container-type: inline-size; }
+  /* Tutti i riquadri hanno lo stesso formato: l'immagine viene ritagliata al centro. */
+  img { display: block; width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
+  .velo {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 0.4em; padding: 0 var(--margine); text-align: center;
+    background: rgba(8, 8, 7, 0.62);
+    opacity: 0; transition: opacity 0.9s ease;
+  }
+  .numero {
+    font-family: var(--serif); line-height: 1;
+    font-size: clamp(1.8rem, 9cqi, 4.5rem); color: var(--accento);
+  }
+  .titolo {
+    font-family: var(--serif); line-height: 1.15;
+    font-size: clamp(1rem, 4.2cqi, 2.4rem); max-width: 26em;
+  }
+  /* Il titolo compare: col mouse sopra (solo dove c'è un mouse),
+     con la tastiera, e su telefono mentre il dito tocca il video. */
+  .quadro.aperto .velo { opacity: 1; }
+  a:focus-visible .velo, .quadro.attivo .velo { opacity: 1; }
+  a:focus-visible { outline-offset: -3px; }
+</style>

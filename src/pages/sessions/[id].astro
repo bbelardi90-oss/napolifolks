@@ -1,0 +1,8 @@
+---
+import Sessione from '../../pagine/Sessione.astro';
+import { percorsiSessioni } from '../../lib/sessioni';
+
+export const getStaticPaths = percorsiSessioni;
+const { sessione, precedente, successiva } = Astro.props;
+---
+<Sessione l="en" sessione={sessione} precedente={precedente} successiva={successiva} />

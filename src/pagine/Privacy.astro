@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import Segnaposto from '../components/Segnaposto.astro';
+import { SITO } from '../config';
+import { type Lingua } from '../i18n';
+
+interface Props { l: Lingua }
+const { l } = Astro.props;
+
+const testi = {
+  en: {
+    segnaposto: 'privacy policy text: to be provided or checked',
+    titolare: 'Data controller',
+    titolareSegnaposto: 'name and address of the data controller',
+    funzionamento: 'How this site works',
+    nota: 'Technical note, to be checked before publication',
+    punti: [
+      'The site is static and uses no cookies of its own and no analytics.',
+      'Fonts are hosted on the site itself.',
+      "YouTube videos load from youtube-nocookie.com only after you press play. From that moment, Google's privacy policy applies.",
+      'The site is hosted on Cloudflare.',
+      `Artist suggestions arrive by email at ${SITO.email}.`,
+    ],
+  },
+  it: {
+    segnaposto: "testo dell'informativa privacy: da fornire o verificare",
+    titolare: 'Titolare del trattamento',
+    titolareSegnaposto: 'nome e indirizzo del titolare del trattamento',
+    funzionamento: 'Come funziona questo sito',
+    nota: 'Nota tecnica, da verificare prima della pubblicazione',
+    punti: [
+      'Il sito è statico e non usa cookie propri né strumenti di statistica.',
+      'I caratteri sono ospitati sul sito stesso.',
+      "I video di YouTube si caricano da youtube-nocookie.com solo dopo che premi play. Da quel momento vale l'informativa privacy di Google.",
+      'Il sito è ospitato su Cloudflare.',
+      `Le segnalazioni di artisti arrivano via email a ${SITO.email}.`,
+    ],
+  },
+}[l];
+---
+<Base titolo="Privacy">
+  <section class="sezione contenitore">
+    <h1>Privacy</h1>
+    <div class="testo">
+      <Segnaposto blocco>{testi.segnaposto}</Segnaposto>
+
+      <h2>{testi.titolare}</h2>
+      <p><Segnaposto>{testi.titolareSegnaposto}</Segnaposto> — <a href={`mailto:${SITO.email}`}>{SITO.email}</a></p>
+
+      <h2>{testi.funzionamento}</h2>
+      <p class="dettaglio">{testi.nota}</p>
+      <ul>
+        {testi.punti.map((p) => <li>{p}</li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
