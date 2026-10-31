@@ -1,6 +1,8 @@
 ---
 import { SITO } from '../config';
 import Icona from './Icona.astro';
+import { linguaDa, percorso, TESTI } from '../i18n';
+const l = linguaDa(Astro.url);
 ---
 <footer class="piede">
   <div class="contenitore griglia">
@@ -12,7 +14,7 @@ import Icona from './Icona.astro';
     </ul>
     <ul class="contatti">
       <li><a href={`mailto:${SITO.email}`}>{SITO.email}</a></li>
-      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href={percorso(l, '/privacy/')}>{TESTI[l].privacy}</a></li>
     </ul>
   </div>
 </footer>

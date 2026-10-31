@@ -2,18 +2,20 @@
 // Video caricato solo al clic, da youtube-nocookie.com.
 // Prima del clic si vede la miniatura salvata in locale: nessuna richiesta a Google.
 import { dimensioniMiniatura } from '../lib/sessioni';
+import { linguaDa, TESTI } from '../i18n';
 interface Props { id: string; titolo: string }
 const { id, titolo } = Astro.props;
 const { larghezza, altezza } = dimensioniMiniatura(id);
+const t = TESTI[linguaDa(Astro.url)];
 ---
 <div class="video" data-id={id} data-titolo={titolo}>
-  <button type="button" class="avvia" aria-label={`Play: ${titolo}`}>
+  <button type="button" class="avvia" aria-label={`${t.play}: ${titolo}`}>
     <img src={`/miniature/${id}.jpg`} alt="" width={larghezza} height={altezza} />
     <span class="play" aria-hidden="true"></span>
   </button>
   <p class="nota dettaglio">
-    The video loads from YouTube (youtube-nocookie.com) only when you press play.{" "}
-    <a href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">Watch on YouTube</a>
+    {t.notaVideo}{" "}
+    <a href={`https://www.youtube.com/watch?v=${id}`} rel="noopener">{t.guardaSuYouTube}</a>
   </p>
 </div>
 

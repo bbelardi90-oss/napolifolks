@@ -1,18 +1,4 @@
 ---
-import Base from '../layouts/Base.astro';
-import Segnaposto from '../components/Segnaposto.astro';
-import { SITO } from '../config';
-
-const oggetto = encodeURIComponent('Artist suggestion — Napoli Folks');
+import Suggest from '../pagine/Suggest.astro';
 ---
-<Base titolo="Suggest an artist">
-  <section class="sezione contenitore">
-    <h1>Suggest an artist</h1>
-    <div class="testo">
-      <Segnaposto blocco>introduction to this page</Segnaposto>
-      <p>Write to <a href={`mailto:${SITO.email}`}>{SITO.email}</a>.</p>
-      <Segnaposto blocco>what to include in the email</Segnaposto>
-      <p><a class="pulsante" href={`mailto:${SITO.email}?subject=${oggetto}`}>Send an email</a></p>
-    </div>
-  </section>
-</Base>
+<Suggest l="en" />

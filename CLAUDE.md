@@ -31,9 +31,16 @@ si inseriscono solo dopo la conferma di Bruno.
 
 ## Lingua
 
-Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti).
+Il sito è in **inglese** (testi, menu, indirizzi delle pagine, segnaposti): all'apertura si vede
+sempre l'inglese. C'è la **traduzione italiana** sotto `/it/`, con gli stessi indirizzi
+(`/it/about/`, `/it/sessions/NN/`…). Nella barra in alto una bandierina porta alla stessa pagina
+nell'altra lingua (bandiera italiana sul sito inglese, britannica su quello italiano).
 Questo file e i commenti nel codice restano in italiano.
 Pagine: `/` (tutti i video), `/sessions/NN/`, `/about/`, `/suggest/`, `/privacy/`.
+Come è fatto: le pagine vere stanno in `src/pagine/` e ricevono la lingua `l`; i file in
+`src/pages/` (inglese) e `src/pages/it/` (italiano) le pubblicano. Testi comuni (menu, pulsanti)
+in `src/i18n.ts`; testi di una sola pagina in cima al suo file in `src/pagine/`.
+Ogni testo nuovo va scritto in entrambe le lingue.
 La pagina archivio `/sessions/` è stata tolta: i video sono già tutti in home. La sezione Artists è stata tolta per ora (i dati dei gruppi restano in
 `src/content/gruppi/`, pronti se si rimette). Nell'interfaccia i "gruppi" si chiamano "Artists".
 Ruoli in About: Art Director, Filmmaker, Sound Engineer (decisi con Bruno: non usare
@@ -65,7 +72,9 @@ Dietro un proxy (es. ambiente cloud) lanciare con `NODE_USE_ENV_PROXY=1`.
 Descrizioni: `descrizioneOriginale` = testo YouTube completo (italiano e inglese insieme),
 non mostrato sul sito. `descrizione` = solo inglese, mostrato sul sito: la parte inglese
 copiata da YouTube; dove manca, tradotta fedelmente dall'italiano (segnalato nel file).
-Mai italiano e inglese nella stessa pagina. Altre lingue: in futuro, come traduzione del sito.
+`descrizioneIt` = solo italiano, mostrato su `/it/`: la parte italiana copiata da YouTube
+(senza i titoli di coda); dove manca, tradotta fedelmente dall'inglese (segnalato nel file).
+Mai italiano e inglese nella stessa pagina.
 
 Anteprime dei video: il logo Napoli Folks è stampato dentro i video, quindi le
 anteprime sono fotogrammi automatici di YouTube (maxres1/2/3) ritagliati per lasciare

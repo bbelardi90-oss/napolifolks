@@ -4,6 +4,7 @@
 // (su telefono: quando il video passa al centro dello schermo scorrendo).
 import type { Sessione } from '../lib/sessioni';
 import { numeroFormattato, titoloBreve, dimensioniMiniatura } from '../lib/sessioni';
+import { linguaDa, percorso } from '../i18n';
 
 interface Props { sessione: Sessione; primo?: boolean }
 const { sessione, primo = false } = Astro.props;
@@ -17,7 +18,7 @@ const { larghezza, altezza } = dimensioniMiniatura(d.youtubeId);
   data-location={d.luogo?.id ?? ''}
   data-year={anno}
 >
-  <a href={`/sessions/${sessione.id}/`}>
+  <a href={percorso(linguaDa(Astro.url), `/sessions/${sessione.id}/`)}>
     <img
       src={`/miniature/${d.youtubeId}.jpg`}
       alt=""

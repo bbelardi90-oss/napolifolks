@@ -75,6 +75,7 @@ youtubeId: ${JSON.stringify(v.id)}
 durata: null  # [durata] — non presente nel feed RSS
 dataPubblicazione: ${v.data ? JSON.stringify(v.data) : 'null'}
 descrizione: null  # [English description] — da preparare dal testo originale
+descrizioneIt: null  # [testo italiano] — la parte italiana del testo originale
 descrizioneOriginale: ${v.descrizione ? JSON.stringify(v.descrizione) : 'null'}
 # Da definire con Bruno: non dedurli dal titolo.
 gruppo: null

@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import Segnaposto from '../components/Segnaposto.astro';
+import { SITO } from '../config';
+import { type Lingua } from '../i18n';
+
+interface Props { l: Lingua }
+const { l } = Astro.props;
+
+const testi = {
+  en: {
+    titolo: 'Suggest an artist',
+    introduzione: 'introduction to this page',
+    scrivi: 'Write to',
+    cosaScrivere: 'what to include in the email',
+    invia: 'Send an email',
+    oggetto: 'Artist suggestion — Napoli Folks',
+  },
+  it: {
+    titolo: 'Segnala un artista',
+    introduzione: 'introduzione a questa pagina',
+    scrivi: 'Scrivi a',
+    cosaScrivere: "cosa scrivere nell'email",
+    invia: "Invia un'email",
+    oggetto: 'Segnalazione artista — Napoli Folks',
+  },
+}[l];
+const oggetto = encodeURIComponent(testi.oggetto);
+---
+<Base titolo={testi.titolo}>
+  <section class="sezione contenitore">
+    <h1>{testi.titolo}</h1>
+    <div class="testo">
+      <Segnaposto blocco>{testi.introduzione}</Segnaposto>
+      <p>{testi.scrivi} <a href={`mailto:${SITO.email}`}>{SITO.email}</a>.</p>
+      <Segnaposto blocco>{testi.cosaScrivere}</Segnaposto>
+      <p><a class="pulsante" href={`mailto:${SITO.email}?subject=${oggetto}`}>{testi.invia}</a></p>
+    </div>
+  </section>
+</Base>

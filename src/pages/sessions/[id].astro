@@ -1,61 +1,8 @@
 ---
-import Base from '../../layouts/Base.astro';
-import VideoYouTube from '../../components/VideoYouTube.astro';
-import Segnaposto from '../../components/Segnaposto.astro';
-import { tutteLeSessioni, numeroFormattato, titoloBreve, urlYouTube, type Sessione } from '../../lib/sessioni';
+import Sessione from '../../pagine/Sessione.astro';
+import { percorsiSessioni } from '../../lib/sessioni';
 
-export async function getStaticPaths() {
-  const sessioni = await tutteLeSessioni();
-  return sessioni.map((s, i) => ({
-    params: { id: s.id },
-    props: { sessione: s, precedente: sessioni[i + 1] ?? null, successiva: sessioni[i - 1] ?? null },
-  }));
-}
-
-interface Props { sessione: Sessione; precedente: Sessione | null; successiva: Sessione | null }
+export const getStaticPaths = percorsiSessioni;
 const { sessione, precedente, successiva } = Astro.props;
-const d = sessione.data;
-// Riassunto per i motori di ricerca: inizio della descrizione YouTube, al massimo ~160 caratteri.
-const riassunto = d.descrizione
-  ? (() => {
-      const t = d.descrizione.replace(/\s+/g, ' ').trim();
-      return t.length <= 160 ? t : t.slice(0, 157).replace(/\s+\S*$/, '') + '…';
-    })()
-  : null;
 ---
-<Base titolo={`${numeroFormattato(d.numero)} · ${titoloBreve(d.titolo)}`} descrizione={riassunto} immagine={`/miniature/${d.youtubeId}.jpg`}>
-  <article class="sezione contenitore">
-    <p class="numero">{numeroFormattato(d.numero)}</p>
-    <h1>{titoloBreve(d.titolo)}</h1>
-
-    <VideoYouTube id={d.youtubeId} titolo={d.titolo} />
-
-
-    <div class="testo descrizione">
-      {d.descrizione
-        ? d.descrizione.split(/\n{2,}/).map((p) => <p>{p}</p>)
-        : <Segnaposto blocco>description from the YouTube video</Segnaposto>}
-    </div>
-
-    <p><a class="pulsante" href={urlYouTube(d.youtubeId)} rel="noopener">Open on YouTube</a></p>
-
-    <nav class="vicine" aria-label="More sessions">
-      {precedente ? <a href={`/sessions/${precedente.id}/`}>← {numeroFormattato(precedente.data.numero)}</a> : <span></span>}
-      <a href="/">All sessions</a>
-      {successiva ? <a href={`/sessions/${successiva.id}/`}>{numeroFormattato(successiva.data.numero)} →</a> : <span></span>}
-    </nav>
-  </article>
-</Base>
-
-<style>
-  .descrizione, .vicine { max-width: 960px; }
-  .numero { font-family: var(--serif); font-size: clamp(3.2rem, 8vw, 6rem); line-height: 1; color: var(--accento); margin: 0 0 8px; }
-  h1 { font-size: clamp(1.9rem, 5vw, 3.2rem); margin-bottom: clamp(28px, 5vw, 56px); max-width: 24em; }
-  .descrizione { white-space: pre-line; margin: clamp(28px, 5vw, 48px) 0 32px; }
-  .vicine {
-    display: flex; justify-content: space-between; gap: 12px; margin-top: 56px;
-    font-family: var(--sans); font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase;
-  }
-  .vicine a { text-decoration: none; color: var(--testo-2); }
-  .vicine a:hover { color: var(--accento); }
-</style>
+<Sessione l="en" sessione={sessione} precedente={precedente} successiva={successiva} />

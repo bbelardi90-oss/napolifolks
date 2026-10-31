@@ -18,6 +18,15 @@ export async function tutteLeSessioni(): Promise<Sessione[]> {
 // Titolo senza la parte ripetuta "Napoli Folks Live #N -": resta il testo
 // del video (artista e brano). La prima virgola, che nei titoli separa
 // artista e brano, diventa una lineetta.
+// Percorsi per le pagine delle sessioni, con la sessione precedente e la successiva.
+export async function percorsiSessioni() {
+  const sessioni = await tutteLeSessioni();
+  return sessioni.map((s, i) => ({
+    params: { id: s.id },
+    props: { sessione: s, precedente: sessioni[i + 1] ?? null, successiva: sessioni[i - 1] ?? null },
+  }));
+}
+
 export function titoloBreve(titolo: string): string {
   return titolo
     .replace(/^\s*Napoli Folks Live\s*-?\s*(#\s*\d+)?\s*-?\s*/i, '')

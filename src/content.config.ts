@@ -14,6 +14,7 @@ const sessioni = defineCollection({
     durata: z.number().int().nullable(),
     dataPubblicazione: z.coerce.date().nullable(),
     descrizione: z.string().nullable(), // testo in inglese mostrato sul sito
+    descrizioneIt: z.string().nullable().default(null), // testo in italiano mostrato su /it/
     descrizioneOriginale: z.string().nullable().default(null), // descrizione YouTube completa, non mostrata
     gruppo: reference('gruppi').nullable(),
     luogo: reference('luoghi').nullable(),

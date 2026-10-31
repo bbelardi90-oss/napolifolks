@@ -3,27 +3,39 @@ import '../styles/global.css';
 import { SITO } from '../config';
 import Intestazione from '../components/Intestazione.astro';
 import PiePagina from '../components/PiePagina.astro';
+import { linguaDa, percorsoIn, TESTI } from '../i18n';
 
 interface Props {
   titolo?: string;
   // Meta description: solo testi forniti da Bruno. Se manca, non viene scritta.
   descrizione?: string | null;
   immagine?: string;
+  // Pagina 404: non ha un indirizzo proprio, quindi niente link all'altra lingua per i motori
+  // di ricerca e la bandierina porta alla home dell'altra lingua.
+  nonTrovata?: boolean;
 }
-const { titolo, descrizione = null, immagine } = Astro.props;
+const { titolo, descrizione = null, immagine, nonTrovata = false } = Astro.props;
 const titoloPagina = titolo ? `${titolo} — ${SITO.nome}` : SITO.nome;
 const canonico = new URL(Astro.url.pathname, Astro.site);
+const l = linguaDa(Astro.url);
+// Indirizzi della stessa pagina in inglese e in italiano, per i motori di ricerca.
+const inglese = new URL(percorsoIn('en', Astro.url), Astro.site);
+const italiano = new URL(percorsoIn('it', Astro.url), Astro.site);
 ---
 <!doctype html>
-<html lang="en">
+<html lang={l}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titoloPagina}</title>
     {descrizione && <meta name="description" content={descrizione} />}
-    <link rel="canonical" href={canonico} />
+    {!nonTrovata && <link rel="canonical" href={canonico} />}
+    {!nonTrovata && <link rel="alternate" hreflang="en" href={inglese} />}
+    {!nonTrovata && <link rel="alternate" hreflang="it" href={italiano} />}
+    {!nonTrovata && <link rel="alternate" hreflang="x-default" href={inglese} />}
     <meta property="og:title" content={titoloPagina} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={l === 'it' ? 'it_IT' : 'en_GB'} />
     <meta property="og:url" content={canonico} />
     {immagine && <meta property="og:image" content={new URL(immagine, Astro.site)} />}
     <meta name="theme-color" content="#11100e" />
@@ -31,8 +43,8 @@ const canonico = new URL(Astro.url.pathname, Astro.site);
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   </head>
   <body>
-    <a class="salta" href="#contenuto">Skip to content</a>
-    <Intestazione />
+    <a class="salta" href="#contenuto">{TESTI[l].saltaAlContenuto}</a>
+    <Intestazione nonTrovata={nonTrovata} />
     <main id="contenuto">
       <slot />
     </main>

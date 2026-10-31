@@ -1,11 +1,4 @@
 ---
-import Base from '../layouts/Base.astro';
-import GrigliaSessioni from '../components/GrigliaSessioni.astro';
-import { tutteLeSessioni } from '../lib/sessioni';
-
-const sessioni = await tutteLeSessioni();
+import Home from '../pagine/Home.astro';
 ---
-<Base>
-  <h1 class="nascosto">Napoli Folks</h1>
-  <GrigliaSessioni sessioni={sessioni} />
-</Base>
+<Home l="en" />

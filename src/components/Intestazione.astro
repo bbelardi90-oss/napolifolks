@@ -1,26 +1,44 @@
 ---
 import { SITO } from '../config';
+import { linguaDa, percorso, percorsoIn, TESTI } from '../i18n';
+import Bandiera from './Bandiera.astro';
 
+interface Props { nonTrovata?: boolean }
+const { nonTrovata = false } = Astro.props;
+const l = linguaDa(Astro.url);
+const t = TESTI[l];
+// La bandierina porta alla stessa pagina nell'altra lingua.
+const altra = l === 'en' ? 'it' : 'en';
 const voci = [
-  { href: '/about/', testo: 'About' },
-  { href: '/suggest/', testo: 'Suggest an artist' },
+  { href: percorso(l, '/about/'), testo: t.about },
+  { href: percorso(l, '/suggest/'), testo: t.suggest },
 ];
-const percorso = Astro.url.pathname;
-const attiva = (href: string) => percorso.startsWith(href);
+const percorsoAttuale = Astro.url.pathname;
+const attiva = (href: string) => percorsoAttuale.startsWith(href);
 ---
 <header class="intestazione">
   <div class="barra contenitore">
-    <a class="marchio" href="/"><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" /></a>
-    <details class="menu">
-      <summary aria-label="Menu"><span></span><span></span></summary>
-      <nav aria-label="Main">
-        <ul>
-          {voci.map((v) => (
-            <li><a href={v.href} aria-current={attiva(v.href) ? 'page' : undefined}>{v.testo}</a></li>
-          ))}
-        </ul>
-      </nav>
-    </details>
+    <a class="marchio" href={percorso(l, '/')}><img src="/logo/logo.png" alt={SITO.nome} width="712" height="320" /></a>
+    <div class="destra">
+      <a
+        class="lingua"
+        href={nonTrovata ? percorso(altra, '/') : percorsoIn(altra, Astro.url)}
+        hreflang={altra}
+        lang={altra}
+        aria-label={TESTI[altra].nomeLingua}
+        title={TESTI[altra].nomeLingua}
+      ><Bandiera lingua={altra} /></a>
+      <details class="menu">
+        <summary aria-label={t.menu}><span></span><span></span></summary>
+        <nav aria-label={t.navigazione}>
+          <ul>
+            {voci.map((v) => (
+              <li><a href={v.href} aria-current={attiva(v.href) ? 'page' : undefined}>{v.testo}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </details>
+    </div>
   </div>
 </header>
 
@@ -34,6 +52,13 @@ const attiva = (href: string) => percorso.startsWith(href);
   .barra { display: flex; align-items: center; justify-content: space-between; min-height: 60px; }
   .marchio { display: block; line-height: 0; }
   .marchio img { height: 40px; width: auto; }
+  .destra { display: flex; align-items: center; gap: 8px; }
+  /* Bandierina della lingua: su telefono a sinistra del menu, su computer dopo le voci. */
+  .lingua {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    opacity: 0.85; transition: opacity 0.2s;
+  }
+  .lingua:hover, .lingua:focus-visible { opacity: 1; }
   .menu summary {
     list-style: none; cursor: pointer; width: 44px; height: 44px;
     display: flex; flex-direction: column; justify-content: center; gap: 7px; align-items: flex-end;
@@ -64,6 +89,8 @@ const attiva = (href: string) => percorso.startsWith(href);
     .menu summary { display: none; }
     .menu > nav { display: block; }
     nav ul { display: flex; gap: 28px; }
+    .destra { gap: 20px; }
+    .lingua { order: 2; }
   }
 </style>
 

@@ -1,26 +1,4 @@
 ---
-import Base from '../layouts/Base.astro';
-import Segnaposto from '../components/Segnaposto.astro';
-import { SITO } from '../config';
+import Privacy from '../pagine/Privacy.astro';
 ---
-<Base titolo="Privacy">
-  <section class="sezione contenitore">
-    <h1>Privacy</h1>
-    <div class="testo">
-      <Segnaposto blocco>privacy policy text: to be provided or checked</Segnaposto>
-
-      <h2>Data controller</h2>
-      <p><Segnaposto>name and address of the data controller</Segnaposto> — <a href={`mailto:${SITO.email}`}>{SITO.email}</a></p>
-
-      <h2>How this site works</h2>
-      <p class="dettaglio">Technical note, to be checked before publication</p>
-      <ul>
-        <li>The site is static and uses no cookies of its own and no analytics.</li>
-        <li>Fonts are hosted on the site itself.</li>
-        <li>YouTube videos load from youtube-nocookie.com only after you press play. From that moment, Google's privacy policy applies.</li>
-        <li>The site is hosted on Cloudflare.</li>
-        <li>Artist suggestions arrive by email at {SITO.email}.</li>
-      </ul>
-    </div>
-  </section>
-</Base>
+<Privacy l="en" />
