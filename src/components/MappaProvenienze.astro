@@ -7,7 +7,8 @@
 // Le provenienze stanno in src/data/provenienze.json (solo quelle confermate da Bruno).
 import { geoNaturalEarth1, geoPath, geoInterpolate } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
-import mondo from 'world-atlas/countries-50m.json';
+import { presimplify, simplify, quantile } from 'topojson-simplify';
+import mondo50 from 'world-atlas/countries-50m.json';
 import provenienze from '../data/provenienze.json';
 import { getEntry } from 'astro:content';
 import { percorso, type Lingua } from '../i18n';
@@ -17,8 +18,8 @@ interface Props { l: Lingua; descrizione: string }
 const { l, descrizione } = Astro.props;
 
 const testi = {
-  en: { guarda: 'Watch the video', chiudi: 'Close', piu: 'Zoom in', meno: 'Zoom out', tutta: 'Show whole map', aiuto: 'Zoom and drag the map. Tap a city to see its video.' },
-  it: { guarda: 'Guarda il video', chiudi: 'Chiudi', piu: 'Ingrandisci', meno: 'Riduci', tutta: 'Mostra tutta la mappa', aiuto: 'Ingrandisci e trascina la mappa. Tocca una città per vedere il suo video.' },
+  en: { guarda: 'Watch the video', chiudi: 'Close', piu: 'Zoom in', meno: 'Zoom out', tutta: 'Back to the start view', aiuto: 'Zoom and drag the map. Tap a city to see its video.' },
+  it: { guarda: 'Guarda il video', chiudi: 'Chiudi', piu: 'Ingrandisci', meno: 'Riduci', tutta: 'Torna alla vista iniziale', aiuto: 'Ingrandisci e trascina la mappa. Tocca una città per vedere il suo video.' },
 }[l];
 
 type Punto = [number, number];
@@ -36,9 +37,16 @@ proiezione.fitExtent(
   [[margine.sinistra, margine.sopra], [W - margine.destra, H - margine.sotto]],
   punti as any,
 );
-proiezione.clipExtent([[0, 0], [W, H]]);
+// Si disegna tutto il mondo: all'apertura la vista è inquadrata sulle città,
+// ma si può rimpicciolire fino al mondo intero e spostarsi ovunque.
 const disegna = geoPath(proiezione).digits(1);
+const sfera = disegna({ type: 'Sphere' } as any) ?? '';
+const [[mx0, my0], [mx1, my1]] = geoPath(proiezione).bounds({ type: 'Sphere' } as any);
+const mondoLimiti = [mx0, my0, mx1, my1].map((n) => n.toFixed(1)).join(' ');
 
+// Confini semplificati: tutto il mondo in circa 100 KB compressi (senza, quasi 1 MB).
+const pre = presimplify(structuredClone(mondo50) as any);
+const mondo = simplify(pre, quantile(pre, 0.25));
 const oggetti = (mondo as any).objects;
 const terre = disegna(feature(mondo as any, oggetti.land) as any) ?? '';
 const confini = disegna(mesh(mondo as any, oggetti.countries, (a: any, b: any) => a !== b) as any) ?? '';
@@ -72,10 +80,11 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   };
 }));
 ---
-<figure class="mappa" data-w={W} data-h={H} style={`--rapporto:${(W / H).toFixed(4)}`}>
+<figure class="mappa" data-w={W} data-h={H} data-mondo={mondoLimiti} style={`--rapporto:${(W / H).toFixed(4)}`}>
   <div class="vista" style={`aspect-ratio:${W}/${H}`} tabindex="0" aria-label={testi.aiuto}>
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descrizione}>
       <g class="piano">
+        <path class="mare" d={sfera} />
         <path class="terra" d={terre} />
         <path class="confini" d={confini} vector-effect="non-scaling-stroke" />
         {frecce.map((f) => (
@@ -129,10 +138,12 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   .vista {
     position: relative; width: 100%; overflow: hidden;
     touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
-    background: var(--fondo); border: 1px solid var(--linea);
+    /* Fuori dal globo (si vede rimpicciolendo): un tono più scuro del mare. */
+    background: color-mix(in srgb, var(--fondo) 60%, #000); border: 1px solid var(--linea);
   }
   .vista.trascina { cursor: grabbing; }
   svg { display: block; width: 100%; height: 100%; }
+  .mare { fill: var(--fondo); stroke: var(--linea); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .terra { fill: var(--fondo-2); }
   .confini { fill: none; stroke: var(--linea); stroke-width: 0.8; }
 
@@ -170,7 +181,8 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     text-shadow: 0 0 4px var(--fondo), 0 0 8px var(--fondo), 0 0 12px var(--fondo);
   }
   .napoli .nome { color: var(--testo); }
-  .luogo { cursor: pointer; }
+  .luogo { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .lontano .luogo .nome { display: none; }
   /* Area di tocco più grande del punto. */
   .luogo::before { content: ''; position: absolute; inset: -12px -14px; }
   .luogo.inizio { align-items: flex-start; transform: translate(-7px, -7px); }
@@ -181,7 +193,8 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   /* Pop-up: sopra il punto, tenuto dentro la vista dallo script. */
   .popup {
     position: absolute; left: 0; top: 0; z-index: 3; width: min(230px, 70%);
-    background: var(--fondo); border: 1px solid var(--linea);
+    /* Fuori dal globo (si vede rimpicciolendo): un tono più scuro del mare. */
+    background: color-mix(in srgb, var(--fondo) 60%, #000); border: 1px solid var(--linea);
     box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
     cursor: auto;
   }
@@ -208,7 +221,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     display: flex; flex-direction: column; border: 1px solid var(--linea);
   }
   .comandi button {
-    width: 40px; height: 40px; border: 0; cursor: pointer;
+    width: 40px; height: 40px; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
     background: color-mix(in srgb, var(--fondo) 90%, transparent); color: var(--testo);
     font-family: var(--sans); font-size: 1.25rem; line-height: 1;
   }
@@ -230,7 +243,10 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     const segni = [...vista.querySelectorAll<HTMLElement>('.segno, .popup')];
     const napoli = vista.querySelector<HTMLElement>('.napoli')!;
     const nx = Number(napoli.dataset.x), ny = Number(napoli.dataset.y);
-    const MIN = 1, MAX = 8;
+    // Limiti del mondo intero (unità del viewBox a zoom 1).
+    const [mx0, my0, mx1, my1] = figura.dataset.mondo!.split(' ').map(Number);
+    // Zoom minimo: il mondo intero sta nella vista. Massimo: 10 volte la vista iniziale.
+    const MIN = Math.min(W / (mx1 - mx0), H / (my1 - my0)), MAX = 10;
     let k = 1, tx = 0, ty = 0;
 
     // Pixel dello schermo → unità del viewBox.
@@ -240,15 +256,21 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
       return [(cx - r.left) * W / r.width, (cy - r.top) * H / r.height];
     };
 
-    // La mappa non esce mai dalla vista.
+    // Non si va oltre il bordo del mondo; se il mondo è più piccolo della vista, sta al centro.
+    function limitaAsse(t: number, a: number, b: number, lato: number) {
+      if ((b - a) * k <= lato) return lato / 2 - ((a + b) / 2) * k;
+      return Math.min(-a * k, Math.max(lato - b * k, t));
+    }
     function limita() {
       k = Math.min(MAX, Math.max(MIN, k));
-      tx = Math.min(0, Math.max(W - W * k, tx));
-      ty = Math.min(0, Math.max(H - H * k, ty));
+      tx = limitaAsse(tx, mx0, mx1, W);
+      ty = limitaAsse(ty, my0, my1, H);
     }
 
     function aggiorna() {
       piano.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
+      // Molto rimpicciolita le città sono vicine: restano i punti, i nomi si nascondono.
+      vista.classList.toggle('lontano', k < 0.7);
       const s = scala();
       // Punte delle frecce: a distanza fissa (in pixel) dal centro di Napoli.
       const px = nx * k + tx, py = ny * k + ty;
@@ -259,13 +281,13 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
       }
       for (const el of segni) {
         const x = Number(el.dataset.x) * k + tx, y = Number(el.dataset.y) * k + ty;
+        // Fuori dalla vista (zoom forte): segno e pop-up spariscono.
+        el.style.visibility = x < 0 || x > W || y < 0 || y > H ? 'hidden' : '';
         if (el.classList.contains('popup')) {
           if (!el.hidden) posizionaPopup(el, x / s, y / s);
         } else {
           el.style.left = `${(x / W) * 100}%`;
           el.style.top = `${(y / H) * 100}%`;
-          // Fuori dalla vista (zoom forte): il segno sparisce.
-          el.style.visibility = x < 0 || x > W || y < 0 || y > H ? 'hidden' : '';
         }
       }
     }
