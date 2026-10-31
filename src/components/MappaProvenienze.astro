@@ -1,7 +1,9 @@
 ---
-// Mappa con le frecce dalle città di provenienza degli artisti fino a Napoli.
+// Mappa con le frecce tratteggiate dalle città di provenienza degli artisti fino a Napoli.
 // Disegnata in fase di build (d3-geo + confini Natural Earth da world-atlas): la pagina
 // pubblicata è un SVG statico e non contatta nessun servizio esterno.
+// Zoom: rotellina, pizzico, doppio clic, pulsanti +/−; si sposta trascinando.
+// Clic su una città: piccolo pop-up con miniatura e link al video.
 // Le provenienze stanno in src/data/provenienze.json (solo quelle confermate da Bruno).
 import { geoNaturalEarth1, geoPath, geoInterpolate } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
@@ -9,18 +11,23 @@ import mondo from 'world-atlas/countries-50m.json';
 import provenienze from '../data/provenienze.json';
 import { getEntry } from 'astro:content';
 import { percorso, type Lingua } from '../i18n';
-import { titoloBreve, numeroFormattato } from '../lib/sessioni';
+import { titoloBreve, numeroFormattato, dimensioniMiniatura } from '../lib/sessioni';
 
 interface Props { l: Lingua; descrizione: string }
 const { l, descrizione } = Astro.props;
+
+const testi = {
+  en: { guarda: 'Watch the video', chiudi: 'Close', piu: 'Zoom in', meno: 'Zoom out', tutta: 'Show whole map', aiuto: 'Zoom and drag the map. Tap a city to see its video.' },
+  it: { guarda: 'Guarda il video', chiudi: 'Chiudi', piu: 'Ingrandisci', meno: 'Riduci', tutta: 'Mostra tutta la mappa', aiuto: 'Ingrandisci e trascina la mappa. Tocca una città per vedere il suo video.' },
+}[l];
 
 type Punto = [number, number];
 const napoli = provenienze.napoli.coordinate as Punto;
 const origini = provenienze.origini.map((o) => ({ ...o, coordinate: o.coordinate as Punto }));
 
-// Riquadro: tutte le città più un margine (in unità SVG; spazio per le etichette).
+// Riquadro: tutte le città più un margine (in unità SVG).
 const W = 1000;
-const margine = { sinistra: 70, destra: 70, sopra: 70, sotto: 110 };
+const margine = { sinistra: 70, destra: 70, sopra: 70, sotto: 90 };
 const punti = { type: 'MultiPoint', coordinates: [napoli, ...origini.map((o) => o.coordinate)] } as const;
 const proiezione = geoNaturalEarth1().fitWidth(W - margine.sinistra - margine.destra, punti as any);
 const [[, y0], [, y1]] = geoPath(proiezione).bounds(punti as any);
@@ -38,122 +45,390 @@ const confini = disegna(mesh(mondo as any, oggetti.countries, (a: any, b: any) =
 
 const xy = (p: Punto) => proiezione(p) as [number, number];
 const [nx, ny] = xy(napoli);
+const f1 = (n: number) => n.toFixed(1);
 
-// Ogni freccia segue l'arco più breve sul globo (cerchio massimo), e si ferma
-// poco prima del punto di Napoli. La punta è un triangolo orientato sull'ultimo tratto.
+// Ogni freccia segue l'arco più breve sul globo (cerchio massimo) fino al centro di Napoli.
+// La punta è disegnata dallo script a distanza fissa dal punto, qualunque sia lo zoom.
 const frecce = await Promise.all(origini.map(async (o, i) => {
   const interpola = geoInterpolate(o.coordinate, napoli);
   const passi = 64;
   const tratto: [number, number][] = [];
   for (let k = 0; k <= passi; k++) tratto.push(xy(interpola(k / passi) as Punto));
-  // Accorcia la fine per lasciare visibile il punto di Napoli.
-  const stacco = 14;
-  let fine = tratto.length - 1;
-  while (fine > 1 && Math.hypot(tratto[fine][0] - nx, tratto[fine][1] - ny) < stacco) fine--;
-  const linea = tratto.slice(0, fine + 1);
-  const [ax, ay] = linea[linea.length - 2];
-  const [bx, by] = linea[linea.length - 1];
-  const angolo = (Math.atan2(by - ay, bx - ax) * 180) / Math.PI;
-  const d = linea.map(([x, y], k) => `${k ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+  const [ax, ay] = tratto[passi - 2];
+  const angolo = (Math.atan2(ny - ay, nx - ax) * 180) / Math.PI;
+  const d = tratto.map(([x, y], k) => `${k ? 'L' : 'M'}${f1(x)} ${f1(y)}`).join('');
 
   const sessione = await getEntry('sessioni', o.sessione);
-  const titolo = sessione ? titoloBreve(sessione.data.titolo) : '';
-  const artista = titolo.split(' – ')[0];
+  if (!sessione) throw new Error(`provenienze.json: sessione ${o.sessione} non trovata`);
+  const s = sessione.data;
   const [ox, oy] = xy(o.coordinate);
   return {
-    d, punta: { x: bx, y: by, angolo }, ritardo: i * 0.6,
-    origine: { x: ox, y: oy },
-    citta: o.citta[l as Lingua], artista,
-    numero: sessione ? numeroFormattato(sessione.data.numero) : '',
+    id: `luogo-${o.sessione}`, d, angolo, ritardo: -i * 0.4,
+    x: ox, y: oy,
+    citta: o.citta[l], allinea: o.allinea,
+    numero: numeroFormattato(s.numero), titolo: titoloBreve(s.titolo),
+    miniatura: `/miniature/${s.youtubeId}.jpg`, ...dimensioniMiniatura(s.youtubeId),
     href: percorso(l, `/sessions/${o.sessione}/`),
-    etichetta: o.etichetta, allinea: o.allinea,
   };
 }));
-
-// Posizione delle etichette HTML in percentuale, così restano leggibili a ogni larghezza.
-const pct = (x: number, y: number) => `left:${((x / W) * 100).toFixed(2)}%;top:${((y / H) * 100).toFixed(2)}%`;
 ---
-<figure class="mappa" style={`aspect-ratio:${W}/${H}`}>
-  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descrizione}>
-    <path class="terra" d={terre} />
-    <path class="confini" d={confini} />
-    {frecce.map((f) => (
-      <g class="freccia" style={`--ritardo:${f.ritardo}s`}>
-        <path class="arco" d={f.d} pathLength="1" />
-        <path class="punta" d="M0 0 L-16 -7 L-16 7 Z" transform={`translate(${f.punta.x.toFixed(1)} ${f.punta.y.toFixed(1)}) rotate(${f.punta.angolo.toFixed(1)})`} />
-        <circle class="origine" cx={f.origine.x.toFixed(1)} cy={f.origine.y.toFixed(1)} r="6" />
+<figure class="mappa" data-w={W} data-h={H} style={`--rapporto:${(W / H).toFixed(4)}`}>
+  <div class="vista" style={`aspect-ratio:${W}/${H}`} tabindex="0" aria-label={testi.aiuto}>
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={descrizione}>
+      <g class="piano">
+        <path class="terra" d={terre} />
+        <path class="confini" d={confini} vector-effect="non-scaling-stroke" />
+        {frecce.map((f) => (
+          <path class="arco" d={f.d} vector-effect="non-scaling-stroke" style={`animation-delay:${f.ritardo}s`} />
+        ))}
       </g>
-    ))}
-    <circle class="napoli-alone" cx={nx.toFixed(1)} cy={ny.toFixed(1)} r="18" />
-    <circle class="napoli" cx={nx.toFixed(1)} cy={ny.toFixed(1)} r="8" />
-  </svg>
+      {frecce.map((f) => (
+        <path class="punta" d="M0 0 L-14 -6 L-14 6 Z" data-angolo={f1(f.angolo)} />
+      ))}
+    </svg>
 
-  {frecce.map((f) => (
-    <a class:list={['etichetta', f.etichetta, f.allinea]} href={f.href} style={pct(f.origine.x, f.origine.y)}>
-      <span class="citta">{f.citta}</span>
-      <span class="artista">{f.numero} {f.artista}</span>
-    </a>
-  ))}
-  <span class="etichetta sopra napoli-nome" style={pct(nx, ny)}>
-    <span class="citta">{provenienze.napoli.nome[l as Lingua]}</span>
-  </span>
+    <!-- Segni sopra la mappa: lo script li riposiziona a ogni zoom o spostamento. -->
+    <span class="segno napoli" data-x={f1(nx)} data-y={f1(ny)}>
+      <span class="punto"></span>
+      <span class="nome">{provenienze.napoli.nome[l]}</span>
+    </span>
+    {frecce.map((f) => (
+      <button
+        type="button" class:list={['segno', 'luogo', f.allinea]}
+        data-x={f1(f.x)} data-y={f1(f.y)}
+        aria-expanded="false" aria-controls={f.id}
+      >
+        <span class="punto"></span>
+        <span class="nome">{f.citta}</span>
+      </button>
+    ))}
+    {frecce.map((f) => (
+      <div class="popup" id={f.id} data-x={f1(f.x)} data-y={f1(f.y)} role="dialog" aria-label={f.citta} hidden>
+        <button type="button" class="chiudi" aria-label={testi.chiudi}>×</button>
+        <a href={f.href}>
+          <img src={f.miniatura} alt="" width={f.larghezza} height={f.altezza} loading="lazy" decoding="async" />
+          <span class="citta">{f.citta}</span>
+          <span class="titolo">{f.numero} {f.titolo}</span>
+          <span class="guarda">{testi.guarda} →</span>
+        </a>
+      </div>
+    ))}
+
+    <div class="comandi">
+      <button type="button" data-zoom="in" aria-label={testi.piu} title={testi.piu}>+</button>
+      <button type="button" data-zoom="out" aria-label={testi.meno} title={testi.meno}>−</button>
+      <button type="button" data-zoom="reset" aria-label={testi.tutta} title={testi.tutta}>⤢</button>
+    </div>
+  </div>
+  <figcaption class="dettaglio">{testi.aiuto}</figcaption>
 </figure>
 
 <style>
-  .mappa { position: relative; margin: 0; width: 100%; }
-  svg { display: block; width: 100%; height: 100%; }
-  /* Bordi sfumati: la mappa si perde nel fondo invece di finire con un rettangolo. */
-  svg {
-    --sfuma: 7%;
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent),
-      linear-gradient(to bottom, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent);
-    -webkit-mask-composite: source-in;
-    mask-image: linear-gradient(to right, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent),
-      linear-gradient(to bottom, transparent, #000 var(--sfuma), #000 calc(100% - var(--sfuma)), transparent);
-    mask-composite: intersect;
+  /* Mai più alta dell'80% dello schermo: pulsanti e mappa intera sempre a vista. */
+  .mappa { margin: 0 auto; width: 100%; max-width: calc(80svh * var(--rapporto)); }
+  .vista {
+    position: relative; width: 100%; overflow: hidden;
+    touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
+    background: var(--fondo); border: 1px solid var(--linea);
   }
+  .vista.trascina { cursor: grabbing; }
+  svg { display: block; width: 100%; height: 100%; }
   .terra { fill: var(--fondo-2); }
   .confini { fill: none; stroke: var(--linea); stroke-width: 0.8; }
 
+  /* Frecce tratteggiate: il tratteggio scorre verso Napoli. */
   .arco {
-    fill: none; stroke: var(--accento); stroke-width: 2.5; stroke-linecap: round;
-    stroke-dasharray: 1; stroke-dashoffset: 1;
-    animation: traccia 2.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
-    animation-delay: var(--ritardo);
+    fill: none; stroke: var(--accento); stroke-width: 2; stroke-linecap: round;
+    stroke-dasharray: 6 7;
+    animation: scorre 1.2s linear infinite;
   }
-  .punta, .origine {
-    fill: var(--accento); opacity: 0;
-    animation: compari 0.4s ease forwards;
-  }
-  .origine { animation-delay: var(--ritardo); }
-  .punta { animation-delay: calc(var(--ritardo) + 2s); }
-  .napoli { fill: var(--testo); }
-  .napoli-alone { fill: none; stroke: var(--testo); stroke-width: 1.5; opacity: 0.35; }
+  @keyframes scorre { to { stroke-dashoffset: -13; } }
+  @media (prefers-reduced-motion: reduce) { .arco { animation: none; } }
+  .punta { fill: var(--accento); }
 
-  @keyframes traccia { to { stroke-dashoffset: 0; } }
-  @keyframes compari { to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .arco { animation: none; stroke-dashoffset: 0; }
-    .punta, .origine { animation: none; opacity: 1; }
+  /* Segni: posizionati dallo script in percentuale sulla vista. */
+  .segno {
+    position: absolute; left: 0; top: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    transform: translate(-50%, -7px);
+    font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0;
   }
-
-  /* Etichette: centrate sul punto, sopra o sotto. */
-  .etichetta {
-    position: absolute; transform: translate(-50%, 12px);
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-    text-decoration: none; line-height: 1.15; white-space: nowrap;
-    /* Ombra del colore di fondo: le scritte restano leggibili sopra le frecce. */
+  .punto {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accento); border: 3px solid var(--fondo);
+    transition: transform 0.2s;
+  }
+  .napoli { transform: translate(-50%, -9px); pointer-events: none; }
+  .napoli .punto {
+    width: 18px; height: 18px; background: var(--testo);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--testo) 25%, transparent);
+  }
+  .nome {
+    margin-top: 6px; white-space: nowrap;
+    font-family: var(--sans); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--testo-2);
     text-shadow: 0 0 4px var(--fondo), 0 0 8px var(--fondo), 0 0 12px var(--fondo);
   }
-  .etichetta.sopra { transform: translate(-50%, calc(-100% - 12px)); }
-  /* Vicino ai bordi l'etichetta parte dal punto (inizio) o finisce sul punto (fine). */
-  .etichetta.inizio { transform: translate(-10px, 12px); align-items: flex-start; text-align: left; }
-  .etichetta.fine { transform: translate(calc(-100% + 10px), 12px); align-items: flex-end; text-align: right; }
-  .citta {
-    font-family: var(--sans); font-size: clamp(0.62rem, 1.6vw, 0.78rem);
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--testo-2);
+  .napoli .nome { color: var(--testo); }
+  .luogo { cursor: pointer; }
+  /* Area di tocco più grande del punto. */
+  .luogo::before { content: ''; position: absolute; inset: -12px -14px; }
+  .luogo.inizio { align-items: flex-start; transform: translate(-7px, -7px); }
+  .luogo.fine { align-items: flex-end; transform: translate(calc(-100% + 7px), -7px); }
+  .luogo:hover .nome, .luogo[aria-expanded='true'] .nome { color: var(--accento); }
+  .luogo:hover .punto, .luogo[aria-expanded='true'] .punto { transform: scale(1.3); }
+
+  /* Pop-up: sopra il punto, tenuto dentro la vista dallo script. */
+  .popup {
+    position: absolute; left: 0; top: 0; z-index: 3; width: min(230px, 70%);
+    background: var(--fondo); border: 1px solid var(--linea);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+    cursor: auto;
   }
-  .artista { font-family: var(--serif); font-size: clamp(0.85rem, 2.4vw, 1.25rem); color: var(--testo); }
-  a.etichetta:hover .artista, a.etichetta:focus-visible .artista { color: var(--accento); }
-  .napoli-nome .citta { color: var(--testo); }
+  .popup[hidden] { display: none; }
+  .popup a { display: block; text-decoration: none; padding-bottom: 12px; }
+  .popup img { width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
+  .popup .citta, .popup .titolo, .popup .guarda { display: block; padding: 0 12px; }
+  .popup .citta {
+    margin-top: 10px; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--testo-2);
+  }
+  .popup .titolo { font-family: var(--serif); font-size: 1.05rem; line-height: 1.2; margin-top: 2px; }
+  .popup .guarda { margin-top: 8px; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accento); }
+  .popup a:hover .titolo { color: var(--accento); }
+  .chiudi {
+    position: absolute; top: 4px; right: 4px; z-index: 1; width: 32px; height: 32px;
+    border: 0; border-radius: 50%; cursor: pointer;
+    background: color-mix(in srgb, var(--fondo) 80%, transparent); color: var(--testo);
+    font-size: 1.3rem; line-height: 1;
+  }
+  .chiudi:hover { color: var(--accento); }
+
+  .comandi {
+    position: absolute; right: 10px; bottom: 10px; z-index: 2;
+    display: flex; flex-direction: column; border: 1px solid var(--linea);
+  }
+  .comandi button {
+    width: 40px; height: 40px; border: 0; cursor: pointer;
+    background: color-mix(in srgb, var(--fondo) 90%, transparent); color: var(--testo);
+    font-family: var(--sans); font-size: 1.25rem; line-height: 1;
+  }
+  .comandi button + button { border-top: 1px solid var(--linea); }
+  .comandi button:hover { color: var(--accento); }
+  figcaption { margin-top: 12px; text-transform: none; letter-spacing: 0.02em; font-size: 0.82rem; }
 </style>
+
+<script>
+  // Zoom e spostamento della mappa, e apertura dei pop-up.
+  // Lo zoom agisce sul gruppo .piano dell'SVG (unità del viewBox); segni, punte e pop-up
+  // restano della stessa grandezza e vengono riposizionati qui.
+  for (const figura of document.querySelectorAll<HTMLElement>('.mappa')) {
+    const W = Number(figura.dataset.w);
+    const H = Number(figura.dataset.h);
+    const vista = figura.querySelector<HTMLElement>('.vista')!;
+    const piano = vista.querySelector<SVGGElement>('.piano')!;
+    const punte = [...vista.querySelectorAll<SVGPathElement>('.punta')];
+    const segni = [...vista.querySelectorAll<HTMLElement>('.segno, .popup')];
+    const napoli = vista.querySelector<HTMLElement>('.napoli')!;
+    const nx = Number(napoli.dataset.x), ny = Number(napoli.dataset.y);
+    const MIN = 1, MAX = 8;
+    let k = 1, tx = 0, ty = 0;
+
+    // Pixel dello schermo → unità del viewBox.
+    const scala = () => W / vista.getBoundingClientRect().width;
+    const puntoVista = (cx: number, cy: number): [number, number] => {
+      const r = vista.getBoundingClientRect();
+      return [(cx - r.left) * W / r.width, (cy - r.top) * H / r.height];
+    };
+
+    // La mappa non esce mai dalla vista.
+    function limita() {
+      k = Math.min(MAX, Math.max(MIN, k));
+      tx = Math.min(0, Math.max(W - W * k, tx));
+      ty = Math.min(0, Math.max(H - H * k, ty));
+    }
+
+    function aggiorna() {
+      piano.setAttribute('transform', `translate(${tx} ${ty}) scale(${k})`);
+      const s = scala();
+      // Punte delle frecce: a distanza fissa (in pixel) dal centro di Napoli.
+      const px = nx * k + tx, py = ny * k + ty;
+      for (const p of punte) {
+        const a = Number(p.dataset.angolo), rad = (a * Math.PI) / 180, dist = 13 * s;
+        const x = px - Math.cos(rad) * dist, y = py - Math.sin(rad) * dist;
+        p.setAttribute('transform', `translate(${x} ${y}) rotate(${a}) scale(${s})`);
+      }
+      for (const el of segni) {
+        const x = Number(el.dataset.x) * k + tx, y = Number(el.dataset.y) * k + ty;
+        if (el.classList.contains('popup')) {
+          if (!el.hidden) posizionaPopup(el, x / s, y / s);
+        } else {
+          el.style.left = `${(x / W) * 100}%`;
+          el.style.top = `${(y / H) * 100}%`;
+          // Fuori dalla vista (zoom forte): il segno sparisce.
+          el.style.visibility = x < 0 || x > W || y < 0 || y > H ? 'hidden' : '';
+        }
+      }
+    }
+
+    // Pop-up sopra il punto; se non c'è spazio, sotto. Sempre dentro la vista.
+    function posizionaPopup(el: HTMLElement, x: number, y: number) {
+      const r = vista.getBoundingClientRect();
+      const w = el.offsetWidth, h = el.offsetHeight, m = 8;
+      const left = Math.min(r.width - w - m, Math.max(m, x - w / 2));
+      let top = y - h - 18;
+      if (top < m) top = y + 18;
+      top = Math.max(m, Math.min(r.height - h - m, top));
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+    }
+
+    // Zoom attorno a un punto (in unità del viewBox): quel punto resta fermo.
+    function zoom(fattore: number, vx = W / 2, vy = H / 2) {
+      const k2 = Math.min(MAX, Math.max(MIN, k * fattore));
+      tx = vx - (vx - tx) * (k2 / k);
+      ty = vy - (vy - ty) * (k2 / k);
+      k = k2;
+      limita(); aggiorna();
+    }
+
+    // Rotellina (il pizzico del trackpad arriva come rotellina con ctrlKey).
+    vista.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const [vx, vy] = puntoVista(e.clientX, e.clientY);
+      zoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0025)), vx, vy);
+    }, { passive: false });
+
+    vista.addEventListener('dblclick', (e) => {
+      if ((e.target as Element).closest('.popup, .comandi, .luogo')) return;
+      const [vx, vy] = puntoVista(e.clientX, e.clientY);
+      zoom(2, vx, vy);
+    });
+
+    // Trascinamento con un dito o col mouse, pizzico con due dita.
+    // La cattura del puntatore parte solo dopo un piccolo spostamento,
+    // così il clic sulle città e sui pulsanti funziona normalmente.
+    const puntatori = new Map<number, { x: number; y: number }>();
+    let trascinato = false, inizio = { x: 0, y: 0 }, distanzaPrima = 0, fineTrascinamento = 0;
+
+    vista.addEventListener('pointerdown', (e) => {
+      if ((e.target as Element).closest('.popup, .comandi')) return;
+      // Primo dito di un nuovo gesto: dimentica eventuali puntatori rimasti dal gesto prima
+      // (a volte il tocco su un pulsante non manda pointerup alla vista).
+      if (e.isPrimary) puntatori.clear();
+      puntatori.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (puntatori.size === 1) { trascinato = false; inizio = { x: e.clientX, y: e.clientY }; }
+      if (puntatori.size === 2) {
+        const [a, b] = [...puntatori.values()];
+        distanzaPrima = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+    });
+
+    vista.addEventListener('pointermove', (e) => {
+      const prima = puntatori.get(e.pointerId);
+      if (!prima) return;
+      const ora = { x: e.clientX, y: e.clientY };
+      if (!trascinato && (puntatori.size > 1 || Math.hypot(ora.x - inizio.x, ora.y - inizio.y) > 5)) {
+        trascinato = true;
+        vista.classList.add('trascina');
+        for (const id of puntatori.keys()) vista.setPointerCapture(id);
+      }
+      puntatori.set(e.pointerId, ora);
+      if (!trascinato) return;
+      const s = scala();
+      // Con due dita ogni dito sposta la mappa di metà del suo movimento.
+      const peso = puntatori.size === 1 ? 1 : 0.5;
+      tx += (ora.x - prima.x) * s * peso;
+      ty += (ora.y - prima.y) * s * peso;
+      if (puntatori.size === 2) {
+        const [a, b] = [...puntatori.values()];
+        const distanza = Math.hypot(a.x - b.x, a.y - b.y);
+        const [vx, vy] = puntoVista((a.x + b.x) / 2, (a.y + b.y) / 2);
+        if (distanzaPrima > 0) zoom(distanza / distanzaPrima, vx, vy);
+        distanzaPrima = distanza;
+      } else {
+        limita(); aggiorna();
+      }
+    });
+
+    const fine = (e: PointerEvent) => {
+      puntatori.delete(e.pointerId);
+      if (puntatori.size === 0) {
+        vista.classList.remove('trascina');
+        if (trascinato) fineTrascinamento = performance.now();
+        trascinato = false;
+      }
+    };
+    vista.addEventListener('pointerup', fine);
+    vista.addEventListener('pointercancel', fine);
+
+    // Il clic che arriva subito alla fine di un trascinamento non apre nulla.
+    vista.addEventListener('click', (e) => {
+      if (performance.now() - fineTrascinamento < 250) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    // Pulsanti + − e vista intera. Lo zoom resta centrato su Napoli finché è in vista
+    // (tutte le frecce arrivano lì); altrimenti sul centro della vista.
+    const centroZoom = (): [number, number] => {
+      const x = nx * k + tx, y = ny * k + ty;
+      return x >= 0 && x <= W && y >= 0 && y <= H ? [x, y] : [W / 2, H / 2];
+    };
+    for (const b of vista.querySelectorAll<HTMLButtonElement>('[data-zoom]')) {
+      b.addEventListener('click', () => {
+        if (b.dataset.zoom === 'in') zoom(1.6, ...centroZoom());
+        else if (b.dataset.zoom === 'out') zoom(1 / 1.6, ...centroZoom());
+        else { k = 1; tx = 0; ty = 0; aggiorna(); }
+      });
+    }
+    // Tastiera, quando la mappa ha il focus: + − e frecce.
+    vista.addEventListener('keydown', (e) => {
+      if (e.target !== vista) return;
+      const passo = 60;
+      const azioni: Record<string, () => void> = {
+        '+': () => zoom(1.6, ...centroZoom()), '=': () => zoom(1.6, ...centroZoom()),
+        '-': () => zoom(1 / 1.6, ...centroZoom()),
+        ArrowLeft: () => { tx += passo; }, ArrowRight: () => { tx -= passo; },
+        ArrowUp: () => { ty += passo; }, ArrowDown: () => { ty -= passo; },
+      };
+      const a = azioni[e.key];
+      if (a) { e.preventDefault(); a(); limita(); aggiorna(); }
+    });
+
+    // Pop-up: uno alla volta; si chiude con ×, Esc o toccando fuori.
+    const luoghi = [...vista.querySelectorAll<HTMLButtonElement>('.luogo')];
+    const popupDi = (l: HTMLElement) => document.getElementById(l.getAttribute('aria-controls')!)!;
+    function chiudiTutti() {
+      for (const l of luoghi) {
+        l.setAttribute('aria-expanded', 'false');
+        popupDi(l).hidden = true;
+      }
+    }
+    for (const l of luoghi) {
+      l.addEventListener('click', () => {
+        const popup = popupDi(l);
+        const eraAperto = !popup.hidden;
+        chiudiTutti();
+        if (eraAperto) return;
+        popup.hidden = false;
+        l.setAttribute('aria-expanded', 'true');
+        aggiorna();
+        // Quando la miniatura è caricata l'altezza cambia: riposiziona.
+        popup.querySelector('img')?.addEventListener('load', aggiorna, { once: true });
+      });
+    }
+    for (const c of vista.querySelectorAll<HTMLButtonElement>('.chiudi')) {
+      c.addEventListener('click', (e) => {
+        const popup = c.closest<HTMLElement>('.popup')!;
+        chiudiTutti();
+        luoghi.find((l) => popupDi(l) === popup)?.focus();
+        e.stopPropagation();
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (!(e.target as Element).closest('.popup, .luogo')) chiudiTutti();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') chiudiTutti(); });
+
+    new ResizeObserver(aggiorna).observe(vista);
+    aggiorna();
+  }
+</script>

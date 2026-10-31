@@ -108,7 +108,9 @@ Quando arriveranno fotogrammi originali senza logo, sostituiscono questi.
   fino a Napoli. Solo gli artisti internazionali (scelta di Bruno). Dati in `src/data/provenienze.json`
   (solo provenienze confermate da Bruno); disegno in `src/components/MappaProvenienze.astro`,
   SVG statico generato in build con d3-geo e i confini Natural Earth (`world-atlas`): niente servizi esterni.
-  Per ogni città: `etichetta` (sopra/sotto) e `allinea` (inizio/fine) per tenere la scritta dentro lo schermo.
+  Frecce tratteggiate (il tratteggio scorre verso Napoli). Mappa zoomabile: rotellina, pizzico, doppio clic,
+  pulsanti +/− (centrati su Napoli) e trascinamento. Clic su una città: pop-up con miniatura, titolo
+  e link alla pagina del video. Per ogni città `allinea` (inizio/fine) tiene il nome dentro lo schermo.
 
 ## Lavoro
 
