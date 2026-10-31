@@ -4,10 +4,12 @@
 // (Se un blocco da solo è più lungo della riga, si spezza al suo interno.)
 import { partiTitolo } from '../lib/sessioni';
 
-interface Props { titolo: string }
+// prima: testo opzionale davanti all'artista (es. il numero), tenuto sulla stessa riga.
+interface Props { titolo: string; prima?: string }
 const { artista, brano } = partiTitolo(Astro.props.titolo);
+const inizio = Astro.props.prima ? `${Astro.props.prima} ${artista}` : artista;
 ---
-<span class="parte">{artista}</span>{brano && <>{' '}<span class="parte">{brano}</span></>}
+<span class="parte">{inizio}</span>{brano && <>{' '}<span class="parte">{brano}</span></>}
 
 <style>
   .parte { display: inline-block; max-width: 100%; }

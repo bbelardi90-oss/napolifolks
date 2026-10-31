@@ -86,7 +86,13 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
         <path class="terra" d={terre} />
         <path class="confini" d={confini} vector-effect="non-scaling-stroke" />
         {frecce.map((f) => (
-          <path class="arco" d={f.d} vector-effect="non-scaling-stroke" style={`animation-delay:${f.ritardo}s`} />
+          <g class="via" data-via={f.id}>
+            <!-- La maschera "disegna" la linea dalla città verso Napoli quando si apre. -->
+            <mask id={`maschera-${f.id}`} maskUnits="userSpaceOnUse" x="-5000" y="-5000" width="20000" height="20000">
+              <path class="rivela" d={f.d} pathLength="1" />
+            </mask>
+            <path class="arco" d={f.d} vector-effect="non-scaling-stroke" mask={`url(#maschera-${f.id})`} style={`animation-delay:${f.ritardo}s`} />
+          </g>
         ))}
       </g>
     </svg>
@@ -112,7 +118,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
         <a href={f.href}>
           <img src={f.miniatura} alt="" width={f.larghezza} height={f.altezza} loading="lazy" decoding="async" />
           <span class="citta">{f.citta}</span>
-          <span class="titolo">{f.numero} <TitoloSessione titolo={f.titolo} /></span>
+          <span class="titolo"><TitoloSessione titolo={f.titolo} prima={f.numero} /></span>
           <span class="guarda">{testi.guarda} →</span>
         </a>
       </div>
@@ -150,6 +156,17 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
   }
   @keyframes scorre { to { stroke-dashoffset: -13; } }
   @media (prefers-reduced-motion: reduce) { .arco { animation: none; } }
+  /* Le linee non si vedono finché non si tocca una città: allora la sua linea
+     si disegna dalla città fino a Napoli. Chiudendo, sfuma via. */
+  .via { opacity: 0; transition: opacity 0.4s; }
+  .via.aperta { opacity: 1; transition: none; }
+  .rivela {
+    fill: none; stroke: #fff; stroke-linecap: butt;
+    stroke-dasharray: 1 2; stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0s 0.4s;
+  }
+  .via.aperta .rivela { stroke-dashoffset: 0; transition: stroke-dashoffset 1.4s cubic-bezier(0.45, 0, 0.25, 1); }
+  @media (prefers-reduced-motion: reduce) { .via.aperta .rivela { transition: none; } }
 
   /* Segni: posizionati dallo script in percentuale sulla vista. */
   .segno {
@@ -193,6 +210,9 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     cursor: auto;
   }
   .popup[hidden] { display: none; }
+  /* Il pop-up compare quando la linea è arrivata a Napoli. */
+  .popup { transition: opacity 0.4s; }
+  .popup.attesa { opacity: 0; pointer-events: none; }
   .popup a { display: block; text-decoration: none; padding-bottom: 12px; }
   .popup img { width: 100%; height: auto; aspect-ratio: 2.39 / 1; object-fit: cover; }
   .popup .citta, .popup .titolo, .popup .guarda { display: block; padding: 0 12px; }
@@ -234,6 +254,7 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     const vista = figura.querySelector<HTMLElement>('.vista')!;
     const piano = vista.querySelector<SVGGElement>('.piano')!;
     const segni = [...vista.querySelectorAll<HTMLElement>('.segno, .popup')];
+    const rivela = [...vista.querySelectorAll<SVGPathElement>('.rivela')];
     const napoli = vista.querySelector<HTMLElement>('.napoli')!;
     const nx = Number(napoli.dataset.x), ny = Number(napoli.dataset.y);
     // Limiti del mondo intero (unità del viewBox a zoom 1).
@@ -265,6 +286,8 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
       // Molto rimpicciolita le città sono vicine: restano i punti, i nomi si nascondono.
       vista.classList.toggle('lontano', k < 0.7);
       const s = scala();
+      // Maschera delle linee: sempre un po' più larga della linea (circa 12 px), a ogni zoom.
+      for (const m of rivela) m.style.strokeWidth = String((12 * s) / k);
       for (const el of segni) {
         const x = Number(el.dataset.x) * k + tx, y = Number(el.dataset.y) * k + ty;
         // Fuori dalla vista (zoom forte): segno e pop-up spariscono.
@@ -343,6 +366,8 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
       puntatori.set(e.pointerId, ora);
       if (!trascinato) return;
       const s = scala();
+      // Maschera delle linee: sempre un po' più larga della linea (circa 12 px), a ogni zoom.
+      for (const m of rivela) m.style.strokeWidth = String((12 * s) / k);
       // Con due dita ogni dito sposta la mappa di metà del suo movimento.
       const peso = puntatori.size === 1 ? 1 : 0.5;
       tx += (ora.x - prima.x) * s * peso;
@@ -404,10 +429,16 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
     // Pop-up: uno alla volta; si chiude con ×, Esc o toccando fuori.
     const luoghi = [...vista.querySelectorAll<HTMLButtonElement>('.luogo')];
     const popupDi = (l: HTMLElement) => document.getElementById(l.getAttribute('aria-controls')!)!;
+    // Tempo per disegnare la linea (come in CSS); con "Riduci movimento" niente attesa.
+    const pocoMovimento = matchMedia('(prefers-reduced-motion: reduce)');
+    let attesa = 0;
+    const viaDi = (l: HTMLElement) => vista.querySelector(`[data-via="${l.getAttribute('aria-controls')}"]`);
     function chiudiTutti() {
+      clearTimeout(attesa);
       for (const l of luoghi) {
         l.setAttribute('aria-expanded', 'false');
         popupDi(l).hidden = true;
+        viaDi(l)?.classList.remove('aperta');
       }
     }
     for (const l of luoghi) {
@@ -416,9 +447,13 @@ const frecce = await Promise.all(origini.map(async (o, i) => {
         const eraAperto = !popup.hidden;
         chiudiTutti();
         if (eraAperto) return;
-        popup.hidden = false;
         l.setAttribute('aria-expanded', 'true');
+        // Prima la linea si disegna dalla città fino a Napoli, poi compare il pop-up.
+        viaDi(l)?.classList.add('aperta');
+        popup.classList.add('attesa');
+        popup.hidden = false;
         aggiorna();
+        attesa = window.setTimeout(() => popup.classList.remove('attesa'), pocoMovimento.matches ? 0 : 1400);
         // Quando la miniatura è caricata l'altezza cambia: riposiziona.
         popup.querySelector('img')?.addEventListener('load', aggiorna, { once: true });
       });
