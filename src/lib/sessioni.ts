@@ -15,9 +15,10 @@ export async function tutteLeSessioni(): Promise<Sessione[]> {
   return s.sort((a, b) => (b.data.numero ?? 0) - (a.data.numero ?? 0));
 }
 
-// Titolo senza la parte ripetuta "Napoli Folks Live #N -": resta il testo
-// del video (artista e brano). La prima virgola, che nei titoli separa
-// artista e brano, diventa una lineetta.
+// Titolo senza la parte ripetuta "Napoli Folks (Live) #N -": resta il testo
+// del video (artista e brano). Il separatore tra artista e brano diventa una
+// lineetta: " - " se c'è (es. #9 "Sava & Roza Stevic - Djelem, Djelem"),
+// altrimenti la prima virgola.
 // Percorsi per le pagine delle sessioni, con la sessione precedente e la successiva.
 export async function percorsiSessioni() {
   const sessioni = await tutteLeSessioni();
@@ -28,11 +29,10 @@ export async function percorsiSessioni() {
 }
 
 export function titoloBreve(titolo: string): string {
-  return titolo
-    .replace(/^\s*Napoli Folks Live\s*-?\s*(#\s*\d+)?\s*-?\s*/i, '')
-    .replace(/\s{2,}/g, ' ')
-    .replace(/\s*,\s*/, ' – ')
-    .trim();
+  const t = titolo
+    .replace(/^\s*Napoli Folks(\s+Live)?\s*-?\s*(#\s*\d+)?\s*-?\s*/i, '')
+    .replace(/\s{2,}/g, ' ');
+  return (/\s[-–]\s/.test(t) ? t.replace(/\s+[-–]\s+/, ' – ') : t.replace(/\s*,\s*/, ' – ')).trim();
 }
 
 // Il titolo breve diviso in artista (con la lineetta) e brano, per poterli
